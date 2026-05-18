@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root { --rojo: #ff4d4d; --gris-oscuro: #333; --gris-claro: #f9f9f9; }
+        body { font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; color: var(--gris-oscuro); }
+        
+        /* Header */
+        .container { padding: 40px; min-height: 900px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+        .logo img { max-width: 180px; }
+        .presupuesto-info { text-align: right; }
+        .presupuesto-info h1 { color: var(--rojo); margin: 0; font-size: 32px; letter-spacing: 2px; }
+        .presupuesto-info p { margin: 5px 0; font-size: 14px; color: #666; }
+        .nro-box { border: 1px solid #ddd; padding: 10px; margin-top: 10px; display: inline-block; }
+
+        /* Datos Cliente */
+        .cliente-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; padding: 20px; background: var(--gris-claro); border-radius: 5px; }
+        .dato-line { border-bottom: 1px solid #ddd; padding: 5px 0; font-size: 13px; }
+        .dato-line span { font-weight: bold; color: #555; }
+
+        /* Tabla */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { background: #eee; color: #444; padding: 12px; text-align: left; font-size: 13px; border-bottom: 2px solid var(--rojo); }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .col-cant { width: 15%; }
+        .col-prod { width: 45%; }
+        .col-prec { width: 20%; }
+        .col-total { width: 20%; text-align: right; font-weight: bold; }
+
+        /* Totales */
+        .resumen { float: right; width: 30%; margin-top: 10px; }
+        .resumen-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .resumen-total { background: var(--rojo); color: white; padding: 12px; margin-top: 10px; border-radius: 3px; font-weight: bold; font-size: 18px; }
+
+        /* Footer Barra Roja */
+        .footer { position: absolute; bottom: 0; width: 100%; background: var(--rojo); color: white; padding: 20px 0; }
+        .footer-content { display: flex; justify-content: space-around; align-items: center; text-align: center; font-size: 12px; }
+        .footer-item { display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                {{#if logo}}<img src="{{logo}}" alt="Logo">{{else}}<h2 style="color:var(--rojo)">Liendo Bissutti</h2>{{/if}}
+            </div>
+            <div class="presupuesto-info">
+                <h1>PRESUPUESTO</h1>
+                <div class="nro-box">
+                    <p><strong>N° {{id_presupuesto}}</strong></p>
+                    <p>FECHA: {{fecha}}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cliente-box">
+            <div class="dato-line"><span>CLIENTE:</span> {{cliente.nombre_razon_social}}</div>
+            <div class="dato-line"><span>CUIT:</span> {{cliente.cuit_dni}}</div>
+            <div class="dato-line"><span>TELÉFONO:</span> {{cliente.telefono}}</div>
+            <div class="dato-line"><span>DIRECCIÓN:</span> {{cliente.direccion}}</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-cant">CANTIDAD</th>
+                    <th class="col-prod">DETALLE SERVICIO</th>
+                    <th class="col-prec">PRECIO UNIT.</th>
+                    <th class="col-total">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each items}}
+                <tr>
+                    <td class="col-cant">{{this.cantidad}}</td>
+                    <td class="col-prod">{{this.servicio_nombre}} ({{this.vehiculo_nombre}})</td>
+                    <td class="col-prec">$ {{this.precio_unitario}}</td>
+                    <td class="col-total">$ {{this.subtotal_item}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div class="resumen">
+            <div class="resumen-line"><span>SUBTOTAL</span> <span>$ {{subtotal}}</span></div>
+            <div class="resumen-line"><span>IVA (21%)</span> <span>$ {{iva}}</span></div>
+            <div class="resumen-total"><span>TOTAL</span> <span>$ {{total}}</span></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-item">📍 {{empresa.direccion}}</div>
+            <div class="footer-item">✉️ {{empresa.email}}</div>
+            <div class="footer-item">📞 {{empresa.telefono}}</div>
+        </div>
+    </div>
+</body>
+</html>

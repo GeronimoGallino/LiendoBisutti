@@ -5,6 +5,7 @@ const {
   obtenerHistorial,
   obtenerPorId,
   cambiarEstado,
+  descargarPdf
 } = require('../controllers/presupuestosController');
 
 const router = express.Router();
@@ -14,5 +15,5 @@ router.post('/', crearPresupuesto);
 router.get('/', obtenerHistorial);
 router.get('/:id', obtenerPorId);
 router.patch('/:id/estado', cambiarEstado);
-
+router.get('/:id/pdf', descargarPdf);
 module.exports = router;

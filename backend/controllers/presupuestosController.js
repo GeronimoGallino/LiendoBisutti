@@ -1,4 +1,33 @@
+// controllers/presupuestoController.js
+
 const {  calcularTotales,  generarNuevo,  listarTodos,  buscarUno,  actualizarEstado,} = require('../services/presupuestoService');
+const { generarPresupuestoPDF } = require('../services/pdfService');
+
+const descargarPdf = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Traemos todo el grafo de datos (Presupuesto + Detalles + Cliente + Servicio)
+    const presupuesto = await buscarUno(id);
+    
+    // Generamos el buffer
+    const pdfBuffer = await generarPresupuestoPDF(presupuesto);
+
+    // Configuramos los headers para que el navegador sepa que es un PDF descargable
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=presupuesto_${id}.pdf`,
+      'Content-Length': pdfBuffer.length
+    });
+
+    // Enviamos el archivo
+    res.status(200).send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    res.status(500).json({ error: 'Error al generar el documento' });
+  }
+};
 
 const calcularPreview = async (req, res) => {
   try {
@@ -93,4 +122,5 @@ module.exports = {
   obtenerHistorial,
   obtenerPorId,
   cambiarEstado,
+  descargarPdf
 };

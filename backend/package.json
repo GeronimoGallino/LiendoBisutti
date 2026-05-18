@@ -15,9 +15,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "handlebars": "^4.7.9",
     "luxon": "^3.7.2",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
+    "puppeteer": "^24.43.1",
     "sequelize": "^6.37.8"
   },
   "devDependencies": {
