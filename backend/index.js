@@ -7,8 +7,11 @@ const sequelize = require('./db');
 // const verifyToken = require('./middlewares/authMiddleware');
 
 // IMPORTAR RUTAS (Las crearemos luego)
-// const clientesRoutes = require('./routes/clientes'); 
-// const presupuestosRoutes = require('./routes/presupuestos');
+const clientesRoutes = require('./routes/clientes'); 
+const categoriasVehiculosRoutes = require('./routes/categoriasVehiculos');
+const serviciosRoutes = require('./routes/servicios');
+const tarifasTramosRoutes = require('./routes/tarifasTramos');
+const presupuestosRoutes = require('./routes/presupuestos');
 
 const app = express();  
 const port = process.env.PORT || 3000;
@@ -37,8 +40,11 @@ app.use(cors({
 app.use(express.json());
 
 // USAR RUTAS (Comentadas hasta que existan los archivos)
-// app.use('/api/clientes', verifyToken, clientesRoutes);
-// app.use('/api/presupuestos', verifyToken, presupuestosRoutes);
+app.use('/api/clientes', clientesRoutes);
+app.use('/api/categorias-vehiculos', categoriasVehiculosRoutes);
+app.use('/api/servicios', serviciosRoutes);
+app.use('/api/tarifas-tramos', tarifasTramosRoutes);
+app.use('/api/presupuestos', presupuestosRoutes);
 
 app.get('/', (req, res) => {
     res.send("Backend de Logística Funcionando 🚀");

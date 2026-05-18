@@ -1,3 +1,5 @@
+//models/Servicio.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 const { DateTime } = require('luxon');
@@ -13,7 +15,7 @@ const Servicio = sequelize.define('Servicio', {
     allowNull: false
   },
   tipo_calculo: {
-    type: DataTypes.ENUM('KM', 'HORAS'),
+    type: DataTypes.STRING(50),
     allowNull: false
   }
 }, {
