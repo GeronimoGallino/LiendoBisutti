@@ -1,3 +1,5 @@
+// backend/models/Cliente.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db'); // Ajusta la ruta a donde guardaste tu código de conexión
 

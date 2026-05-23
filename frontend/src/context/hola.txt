@@ -1,0 +1,3 @@
+(Acá irá el AuthContext.jsx en el futuro, por ahora vacía)
+
+todavia no implemento seguridad

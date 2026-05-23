@@ -3,98 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        :root { --rojo: #ff4d4d; --gris-oscuro: #333; --gris-claro: #f9f9f9; }
-        body { font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; color: var(--gris-oscuro); }
-        
-        /* Header */
-        .container { padding: 40px; min-height: 900px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-        .logo img { max-width: 180px; }
-        .presupuesto-info { text-align: right; }
-        .presupuesto-info h1 { color: var(--rojo); margin: 0; font-size: 32px; letter-spacing: 2px; }
-        .presupuesto-info p { margin: 5px 0; font-size: 14px; color: #666; }
-        .nro-box { border: 1px solid #ddd; padding: 10px; margin-top: 10px; display: inline-block; }
+        :root {
+            --rojo-premium: #d93025; /* Un rojo más sofisticado y corporativo */
+            --gris-texto: #444;
+            --gris-suave: #888;
+            --fondo-gris: #f8f9fa;
+        }
 
-        /* Datos Cliente */
-        .cliente-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; padding: 20px; background: var(--gris-claro); border-radius: 5px; }
-        .dato-line { border-bottom: 1px solid #ddd; padding: 5px 0; font-size: 13px; }
-        .dato-line span { font-weight: bold; color: #555; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--gris-texto);
+            line-height: 1.6;
+            background-color: #F5F7F8; /* Fondo sutil para mejor lectura */
+        }
 
-        /* Tabla */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th { background: #eee; color: #444; padding: 12px; text-align: left; font-size: 13px; border-bottom: 2px solid var(--rojo); }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .col-cant { width: 15%; }
-        .col-prod { width: 45%; }
-        .col-prec { width: 20%; }
-        .col-total { width: 20%; text-align: right; font-weight: bold; }
+        .document-wrapper {
+            padding: 50px 60px;
+            position: relative;
+            min-height: 1000px;
+        }
 
-        /* Totales */
-        .resumen { float: right; width: 30%; margin-top: 10px; }
-        .resumen-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
-        .resumen-total { background: var(--rojo); color: white; padding: 12px; margin-top: 10px; border-radius: 3px; font-weight: bold; font-size: 18px; }
+        /* Cabecera Sofisticada */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 60px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
 
-        /* Footer Barra Roja */
-        .footer { position: absolute; bottom: 0; width: 100%; background: var(--rojo); color: white; padding: 20px 0; }
-        .footer-content { display: flex; justify-content: space-around; align-items: center; text-align: center; font-size: 12px; }
-        .footer-item { display: flex; align-items: center; gap: 8px; }
+        .logo-and-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .logo img {
+            max-width: 200px;
+            height: auto;
+            /* Esta es la clave para la integración si el PNG es transparente */
+            display: block; 
+        }
+
+        .empresa-contacto {
+            font-size: 13px;
+            color: var(--gris-suave);
+        }
+
+        .empresa-contacto div {
+            margin-bottom: 3px;
+        }
+
+        .presupuesto-meta {
+            text-align: right;
+        }
+
+        .presupuesto-meta h1 {
+            color: var(--rojo-premium);
+            margin: 0;
+            font-size: 36px;
+            font-weight: 300; /* Tipografía más ligera y elegante */
+            letter-spacing: 1px;
+        }
+
+        .meta-box {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .meta-box span {
+            color: var(--gris-suave);
+        }
+
+        /* Datos Cliente Minimalistas */
+        .cliente-section {
+            margin-bottom: 50px;
+        }
+
+        .cliente-header {
+            color: var(--rojo-premium);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .cliente-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .cliente-dato {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .cliente-dato strong {
+            color: #555;
+            width: 90px;
+            display: inline-block;
+        }
+
+        /* Tabla de Servicios Premium */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--gris-suave);
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 18px 15px;
+            font-size: 14px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .col-detalle { width: 50%; }
+        .col-cantidad { width: 15%; text-align: center; }
+        .col-precio { width: 17%; text-align: right; }
+        .col-total { width: 18%; text-align: right; font-weight: bold; color: #000; }
+
+        /* Totales y Cierre */
+        .totales-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .resumen-table {
+            width: 35%;
+            border-collapse: collapse;
+        }
+
+        .resumen-table td {
+            padding: 10px 15px;
+            font-size: 14px;
+            border-bottom: none;
+        }
+
+        .resumen-label {
+            color: var(--gris-suave);
+            text-align: right;
+        }
+
+        .resumen-value {
+            text-align: right;
+        }
+
+        .resumen-total {
+            background: var(--fondo-gris);
+            font-weight: bold;
+            color: #000;
+        }
+
+        .resumen-total .resumen-label {
+            color: var(--rojo-premium);
+            font-size: 16px;
+        }
+
+        .resumen-total .resumen-value {
+            font-size: 20px;
+        }
+
+        /* Mensaje Final */
+        .nota-final {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            font-size: 12px;
+            color: var(--gris-suave);
+            max-width: 60%;
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="document-wrapper">
         <div class="header">
-            <div class="logo">
-                {{#if logo}}<img src="{{logo}}" alt="Logo">{{else}}<h2 style="color:var(--rojo)">Liendo Bissutti</h2>{{/if}}
+            <div class="logo-and-contact">
+                <div class="logo">
+                    {{#if logo}}
+                        <img src="{{logo}}" alt="Liendo Bissutti Logo">
+                    {{else}}
+                        <h2 style="color:var(--rojo-premium); margin:0;">Liendo Bissutti</h2>
+                    {{/if}}
+                </div>
+                <div class="empresa-contacto">
+                    <div>📞 {{empresa.telefono}}</div>
+                    <div>✉️ {{empresa.email}}</div>
+                    <div>📍 {{empresa.direccion}}</div>
+                </div>
             </div>
-            <div class="presupuesto-info">
-                <h1>PRESUPUESTO</h1>
-                <div class="nro-box">
-                    <p><strong>N° {{id_presupuesto}}</strong></p>
-                    <p>FECHA: {{fecha}}</p>
+            <div class="presupuesto-meta">
+                <h1>Presupuesto</h1>
+                <div class="meta-box">
+                    <div><span>Número:</span> <strong>{{id_presupuesto}}</strong></div>
+                    <div><span>Fecha:</span> <strong>{{fecha}}</strong></div>
                 </div>
             </div>
         </div>
 
-        <div class="cliente-box">
-            <div class="dato-line"><span>CLIENTE:</span> {{cliente.nombre_razon_social}}</div>
-            <div class="dato-line"><span>CUIT:</span> {{cliente.cuit_dni}}</div>
-            <div class="dato-line"><span>TELÉFONO:</span> {{cliente.telefono}}</div>
-            <div class="dato-line"><span>DIRECCIÓN:</span> {{cliente.direccion}}</div>
+        <div class="cliente-section">
+            <div class="cliente-header">Información del Cliente</div>
+            <div class="cliente-grid">
+                <div class="cliente-dato"><strong>Nombre:</strong> {{cliente.nombre}}</div>
+                <div class="cliente-dato"><strong>CUIT:</strong> {{cliente.cuit}}</div>
+                <div class="cliente-dato"><strong>Teléfono:</strong> {{cliente.telefono}}</div>
+                <div class="cliente-dato"><strong>Dirección:</strong> {{cliente.direccion}}</div>
+            </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th class="col-cant">CANTIDAD</th>
-                    <th class="col-prod">DETALLE SERVICIO</th>
-                    <th class="col-prec">PRECIO UNIT.</th>
-                    <th class="col-total">TOTAL</th>
+                    <th class="col-detalle">Descripción del Servicio</th>
+                    <th class="col-cantidad">Cantidad</th>
+                    <th class="col-precio">Precio Unit.</th>
+                    <th class="col-total">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each items}}
                 <tr>
-                    <td class="col-cant">{{this.cantidad}}</td>
-                    <td class="col-prod">{{this.servicio_nombre}} ({{this.vehiculo_nombre}})</td>
-                    <td class="col-prec">$ {{this.precio_unitario}}</td>
+                    <td class="col-detalle">
+                        <strong>{{this.servicio_nombre}}</strong><br>
+                        <span style="color:var(--gris-suave); font-size:12px;">Vehículo: {{this.vehiculo_nombre}}</span>
+                    </td>
+                    <td class="col-cantidad">{{this.cantidad}}</td>
+                    <td class="col-precio">$ {{this.precio_unitario}}</td>
                     <td class="col-total">$ {{this.subtotal_item}}</td>
                 </tr>
                 {{/each}}
             </tbody>
         </table>
 
-        <div class="resumen">
-            <div class="resumen-line"><span>SUBTOTAL</span> <span>$ {{subtotal}}</span></div>
-            <div class="resumen-line"><span>IVA (21%)</span> <span>$ {{iva}}</span></div>
-            <div class="resumen-total"><span>TOTAL</span> <span>$ {{total}}</span></div>
+        <div class="totales-wrapper">
+            <table class="resumen-table">
+                <tr>
+                    <td class="resumen-label">Subtotal</td>
+                    <td class="resumen-value">$ {{subtotal}}</td>
+                </tr>
+                <tr>
+                    <td class="resumen-label">IVA (21%)</td>
+                    <td class="resumen-value">$ {{iva}}</td>
+                </tr>
+                <tr class="resumen-total">
+                    <td class="resumen-label">Total</td>
+                    <td class="resumen-value">$ {{total}}</td>
+                </tr>
+            </table>
         </div>
-    </div>
 
-    <div class="footer">
-        <div class="footer-content">
-            <div class="footer-item">📍 {{empresa.direccion}}</div>
-            <div class="footer-item">✉️ {{empresa.email}}</div>
-            <div class="footer-item">📞 {{empresa.telefono}}</div>
+        <div class="nota-final">
+            <p>Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
+            Liendo Bissutti SAS agradece su confianza.</p>
         </div>
     </div>
 </body>

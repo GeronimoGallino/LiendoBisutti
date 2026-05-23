@@ -1,4 +1,6 @@
-const { crearCliente, actualizarCliente } = require('../services/clienteService');
+// backend/controllers/clienteController.js
+
+const { crearCliente, actualizarCliente, obtenerClientes } = require('../services/clienteService');
 
 const createCliente = async (req, res) => {
   try {
@@ -25,7 +27,20 @@ const updateCliente = async (req, res) => {
   }
 };
 
+const getAllClientes = async (req, res) => {
+  try {
+    const clientes = await obtenerClientes();
+    res.status(200).json(clientes);
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message || 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   createCliente,
   updateCliente,
+  getAllClientes,
 };
+

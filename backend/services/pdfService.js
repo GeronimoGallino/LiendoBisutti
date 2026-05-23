@@ -27,11 +27,11 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
     logo: logoBase64,
     id_presupuesto: datosPresupuesto.id.toString().padStart(5, '0'),
     fecha: DateTime.now().setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy'),
-    
+    validez_dias: datosPresupuesto.validez_dias,
     // Datos del Cliente
     cliente: {
-      nombre: datosPresupuesto.Cliente.nombre,
-      cuit: datosPresupuesto.Cliente.cuit || '---',
+      nombre: datosPresupuesto.Cliente.nombre_razon_social || '---',
+      cuit: datosPresupuesto.Cliente.cuit_dni || '---',
       telefono: datosPresupuesto.Cliente.telefono || '---',
       direccion: datosPresupuesto.Cliente.direccion || '---'
     },

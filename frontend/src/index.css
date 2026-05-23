@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cualquier estilo global estricto que necesites a futuro (ej. reset de scrollbars) va acá abajo */

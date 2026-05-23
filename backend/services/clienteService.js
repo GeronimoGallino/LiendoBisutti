@@ -43,7 +43,12 @@ const actualizarCliente = async (id, data) => {
   return await cliente.update(data);
 };
 
+const obtenerClientes = async () => {
+  return await Cliente.findAll({ order: [['nombre_razon_social', 'ASC']] });
+};
+
 module.exports = {
   crearCliente,
   actualizarCliente,
+  obtenerClientes,
 };
