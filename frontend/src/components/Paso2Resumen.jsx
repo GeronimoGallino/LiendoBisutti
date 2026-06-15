@@ -1,0 +1,58 @@
+import React from 'react';
+import {formatearMoneda} from '../utils/formatters';
+
+
+const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) => {
+  return (
+    <div className="flex flex-col gap-4 animate-fadeIn">
+      <h2 className="text-xl font-bold text-gray-800">Resumen de Cotización</h2>
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
+        
+        {/* LISTA DESGLOSADA POR SERVICIO */}
+        {totalesCalculados.detallesCalculados?.map((detalle, idx) => (
+          <div key={idx} className="flex justify-between border-b pb-3 text-gray-700">
+            <div>
+              <p className="font-bold text-sm text-gray-800">{detalle.snapshot_precios.servicio_nombre}</p>
+              <p className="text-xs text-gray-500">
+                {detalle.snapshot_precios.cantidad_km ? `${detalle.snapshot_precios.cantidad_km} km ` : ''}
+                {detalle.snapshot_precios.cantidad_horas ? `${detalle.snapshot_precios.cantidad_horas} hs ` : ''}
+                | {detalle.snapshot_precios.vehiculo_nombre}
+              </p>
+            </div>
+            {/* SUBTOTAL INDIVIDUAL DEL BACKEND */}
+            <p className="font-bold text-gray-800">{formatearMoneda(detalle.subtotal_item)}</p>
+          </div>
+        ))}
+        
+        {/* DESGLOSE FINAL (SUBTOTAL + IVA) */}
+        <div className="flex flex-col gap-1 pt-2">
+          <div className="flex justify-between items-center text-gray-500 text-sm">
+            <p>Subtotal de servicios:</p>
+            <p>{formatearMoneda(totalesCalculados.subtotalGeneral)}</p>
+          </div>
+          
+          {incluyeIva && (
+            <div className="flex justify-between items-center text-gray-500 text-sm">
+              <p>IVA (21%):</p>
+              <p>{formatearMoneda(totalesCalculados.montoIva)}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-gray-100">
+          <p className="text-xl font-bold text-gray-800">Total Final:</p>
+         <p className="text-2xl font-bold text-brand">{formatearMoneda(totalesCalculados.totalFinal)}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-3 mt-4">
+        <button onClick={onAtras} className="w-1/3 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl active:scale-95">Atrás</button>
+        <button onClick={onSiguiente} className="w-2/3 py-4 bg-brand text-white font-bold rounded-xl active:scale-95 shadow-md">
+          Asignar Cliente ➔
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Paso2Resumen;

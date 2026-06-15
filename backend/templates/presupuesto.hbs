@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <style>
         :root {
-            --rojo-premium: #d93025; /* Un rojo más sofisticado y corporativo */
+            --rojo-premium: #d93025;
             --gris-texto: #444;
             --gris-suave: #888;
             --fondo-gris: #f8f9fa;
@@ -16,7 +16,7 @@
             padding: 0;
             color: var(--gris-texto);
             line-height: 1.6;
-            background-color: #F5F7F8; /* Fondo sutil para mejor lectura */
+            background-color: #F5F7F8;
         }
 
         .document-wrapper {
@@ -25,7 +25,6 @@
             min-height: 1000px;
         }
 
-        /* Cabecera Sofisticada */
         .header {
             display: flex;
             justify-content: space-between;
@@ -44,7 +43,6 @@
         .logo img {
             max-width: 200px;
             height: auto;
-            /* Esta es la clave para la integración si el PNG es transparente */
             display: block; 
         }
 
@@ -65,7 +63,7 @@
             color: var(--rojo-premium);
             margin: 0;
             font-size: 36px;
-            font-weight: 300; /* Tipografía más ligera y elegante */
+            font-weight: 300;
             letter-spacing: 1px;
         }
 
@@ -78,7 +76,6 @@
             color: var(--gris-suave);
         }
 
-        /* Datos Cliente Minimalistas */
         .cliente-section {
             margin-bottom: 50px;
         }
@@ -109,7 +106,6 @@
             display: inline-block;
         }
 
-        /* Tabla de Servicios Premium */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -141,7 +137,6 @@
         .col-precio { width: 17%; text-align: right; }
         .col-total { width: 18%; text-align: right; font-weight: bold; color: #000; }
 
-        /* Totales y Cierre */
         .totales-wrapper {
             display: flex;
             justify-content: flex-end;
@@ -183,7 +178,6 @@
             font-size: 20px;
         }
 
-        /* Mensaje Final */
         .nota-final {
             position: absolute;
             bottom: 60px;
@@ -192,7 +186,6 @@
             color: var(--gris-suave);
             max-width: 60%;
         }
-
     </style>
 </head>
 <body>
@@ -213,7 +206,7 @@
                 </div>
             </div>
             <div class="presupuesto-meta">
-                <h1>Presupuesto</h1>
+                <h1>PRESUPUESTO</h1>
                 <div class="meta-box">
                     <div><span>Número:</span> <strong>{{id_presupuesto}}</strong></div>
                     <div><span>Fecha:</span> <strong>{{fecha}}</strong></div>
@@ -248,7 +241,15 @@
                         <span style="color:var(--gris-suave); font-size:12px;">Vehículo: {{this.vehiculo_nombre}}</span>
                     </td>
                     <td class="col-cantidad">{{this.cantidad}}</td>
-                    <td class="col-precio">$ {{this.precio_unitario}}</td>
+                    
+                    <td class="col-precio">
+                        {{#if this.es_por_hora}}
+                            $ {{this.precio_unitario}}
+                        {{else}}
+                            -
+                        {{/if}}
+                    </td>
+                    
                     <td class="col-total">$ {{this.subtotal_item}}</td>
                 </tr>
                 {{/each}}

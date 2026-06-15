@@ -18,7 +18,7 @@ const Inicio = () => {
         
         {/* BLOQUE IZQUIERDO: Títulos */}
         <div>
-          <h1 className="text-3xl font-bold text-blue-600">Liendo Bissutti</h1>
+          <h1 className="text-3xl font-bold text-blue-600">Liendo Bisutti</h1>
           <p className="text-sm text-gray-400">Panel Principal</p>
         </div>
 

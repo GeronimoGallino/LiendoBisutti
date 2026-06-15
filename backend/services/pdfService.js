@@ -43,14 +43,19 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
       direccion: 'Calle Baltimore 1843'
     },
 
-    items: datosPresupuesto.PresupuestoDetalles.map(d => ({
-      servicio_nombre: d.Servicio.nombre,
-      vehiculo_nombre: d.CategoriaVehiculo.nombre,
-      // Lógica para mostrar cantidad según el tipo
-      cantidad: d.cantidad_km ? `${d.cantidad_km} KM` : `${d.cantidad_horas} Hs`,
-      precio_unitario: d.snapshot_precios.precio_por_km || d.snapshot_precios.precio_hora,
-      subtotal_item: d.subtotal_item
-    })),
+    items: datosPresupuesto.PresupuestoDetalles.map(d => {
+      const calculoPorHora = !!d.cantidad_horas;
+
+      return {
+        servicio_nombre: d.Servicio.nombre,
+        vehiculo_nombre: d.CategoriaVehiculo.nombre,
+        // Lógica para mostrar cantidad según el tipo
+        cantidad: d.cantidad_km ? `${d.cantidad_km} KM` : `${d.cantidad_horas} Hs`,
+        precio_unitario: d.snapshot_precios.precio_por_km || d.snapshot_precios.precio_hora,
+        es_por_hora: calculoPorHora, // Nueva propiedad para la lógica del HTML
+        subtotal_item: d.subtotal_item
+      };
+    }),
     
     subtotal: datosPresupuesto.subtotal_general,
     iva: datosPresupuesto.monto_iva_general,
