@@ -6,7 +6,37 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
   const tipoCalculo = servicioSeleccionado ? servicioSeleccionado.tipo_calculo : '';
 
   const handleServicioChange = (e) => {
-    setServicioActual({ servicio_id: e.target.value, vehiculo_id: '', cantidad_km: '', cantidad_horas: '' });
+    const servId = e.target.value;
+    const srv = catalogos.servicios.find(s => s.id === Number(servId));
+    
+    // Si elige Alquiler Mula, autocompletamos el precio_hora porque el vehículo es automático
+    let p_hora = '';
+    if (srv && srv.tipo_calculo === 'ALQUILER_MULA') {
+      const mulaDb = catalogos.vehiculos.find(v => v.nombre.toLowerCase().includes('mula'));
+      if (mulaDb) p_hora = mulaDb.precio_hora;
+    }
+
+    setServicioActual({ 
+      servicio_id: servId, 
+      vehiculo_id: '', 
+      cantidad_km: '', 
+      cantidad_horas: '',
+      costo_base_fijo_manual: '',
+      precio_hora_manual: p_hora
+    });
+  };
+
+  // NUEVO: Función para atrapar el cambio de vehículo y autocompletar el precio oficial en el input
+  const handleVehiculoChange = (e) => {
+    const vehiculo_id = e.target.value;
+    const vehiculoObj = catalogos.vehiculos.find(v => v.id === Number(vehiculo_id));
+    
+    setServicioActual({
+      ...servicioActual,
+      vehiculo_id,
+      costo_base_fijo_manual: vehiculoObj ? vehiculoObj.costo_base_fijo : '',
+      precio_hora_manual: vehiculoObj ? vehiculoObj.precio_hora : ''
+    });
   };
 
   const esFormularioValido = () => {
@@ -29,27 +59,76 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
         </select>
 
         {['FLETE', 'AUXILIO', 'MUDANZA_INTERIOR'].includes(tipoCalculo) && (
-          <div className="flex gap-2">
-            <input type="tel" placeholder="Cant. KM" value={servicioActual.cantidad_km} onChange={(e) => setServicioActual({...servicioActual, cantidad_km: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
-            <select value={servicioActual.vehiculo_id} onChange={(e) => setServicioActual({...servicioActual, vehiculo_id: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50">
-              <option value="" disabled>Seleccionar Vehículo...</option>
-              {catalogos.vehiculos.filter(v => !v.nombre.toLowerCase().includes('mula')).map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-            </select>
-          </div>
+          <>
+            <div className="flex gap-2">
+              <input type="tel" placeholder="Cant. KM" value={servicioActual.cantidad_km} onChange={(e) => setServicioActual({...servicioActual, cantidad_km: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
+              <select value={servicioActual.vehiculo_id} onChange={handleVehiculoChange} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50">
+                <option value="" disabled>Seleccionar Vehículo...</option>
+                {catalogos.vehiculos.filter(v => !v.nombre.toLowerCase().includes('mula')).map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+              </select>
+            </div>
+            
+            {/* NUEVO INPUT EDITABLE */}
+            {servicioActual.vehiculo_id && (
+               <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
+                 <div className="w-full">
+                    <label className="text-xs text-gray-600 block mb-1">Costo Fijo Base ($) - Editable</label>
+                    <input 
+                      type="tel" 
+                      value={servicioActual.costo_base_fijo_manual} 
+                      onChange={(e) => setServicioActual({...servicioActual, costo_base_fijo_manual: e.target.value})} 
+                      className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
+                    />
+                 </div>
+               </div>
+            )}
+          </>
         )}
 
         {tipoCalculo === 'MUDANZA_LOCAL' && (
-          <div className="flex gap-2">
-            <input type="tel" placeholder="Horas" value={servicioActual.cantidad_horas} onChange={(e) => setServicioActual({...servicioActual, cantidad_horas: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
-            <select value={servicioActual.vehiculo_id} onChange={(e) => setServicioActual({...servicioActual, vehiculo_id: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50">
-              <option value="" disabled>Seleccionar Vehículo...</option>
-              {catalogos.vehiculos.filter(v => !v.nombre.toLowerCase().includes('mula')).map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-            </select>
-          </div>
+          <>
+            <div className="flex gap-2">
+              <input type="tel" placeholder="Horas" value={servicioActual.cantidad_horas} onChange={(e) => setServicioActual({...servicioActual, cantidad_horas: e.target.value})} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
+              <select value={servicioActual.vehiculo_id} onChange={handleVehiculoChange} className="w-1/2 p-3 border border-gray-300 rounded-xl bg-gray-50">
+                <option value="" disabled>Seleccionar Vehículo...</option>
+                {catalogos.vehiculos.filter(v => !v.nombre.toLowerCase().includes('mula')).map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+              </select>
+            </div>
+
+            {/* NUEVO INPUT EDITABLE */}
+            {servicioActual.vehiculo_id && (
+               <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
+                 <div className="w-full">
+                    <label className="text-xs text-gray-600 block mb-1">Precio por Hora ($) - Editable</label>
+                    <input 
+                      type="tel" 
+                      value={servicioActual.precio_hora_manual} 
+                      onChange={(e) => setServicioActual({...servicioActual, precio_hora_manual: e.target.value})} 
+                      className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
+                    />
+                 </div>
+               </div>
+            )}
+          </>
         )}
 
         {tipoCalculo === 'ALQUILER_MULA' && (
-          <input type="tel" placeholder="Cantidad de Horas" value={servicioActual.cantidad_horas} onChange={(e) => setServicioActual({...servicioActual, cantidad_horas: e.target.value})} className="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
+          <>
+            <input type="tel" placeholder="Cantidad de Horas" value={servicioActual.cantidad_horas} onChange={(e) => setServicioActual({...servicioActual, cantidad_horas: e.target.value})} className="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
+            
+            {/* NUEVO INPUT EDITABLE */}
+            <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
+              <div className="w-full">
+                <label className="text-xs text-gray-600 block mb-1">Precio por Hora ($) - Editable</label>
+                <input 
+                  type="tel" 
+                  value={servicioActual.precio_hora_manual} 
+                  onChange={(e) => setServicioActual({...servicioActual, precio_hora_manual: e.target.value})} 
+                  className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
+                />
+              </div>
+            </div>
+          </>
         )}
 
         <button 
@@ -77,7 +156,6 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                     | {srv.nombre_vehiculo}
                   </p>
                 </div>
-                {/* TACHITO DE BASURA */}
                 <button onClick={() => eliminarServicio(idx)} className="text-red-400 hover:text-red-600 active:scale-90 p-2 transition-transform">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>

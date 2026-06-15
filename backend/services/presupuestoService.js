@@ -5,19 +5,25 @@ const Cliente = require('../models/Cliente');
 const Servicio = require('../models/Servicio');
 const CategoriaVehiculo = require('../models/CategoriaVehiculo');
 const TarifaTramo = require('../models/TarifaTramo');
-const EstrategiaFactory = require('../strategies/EstrategiaFactory'); // Importamos el Factory
+const EstrategiaFactory = require('../strategies/EstrategiaFactory'); 
 const { Op } = require('sequelize');
 
-const IVA_RATE = 0.21; // 21% para Argentina
+const IVA_RATE = 0.21; 
 
 const calcularTotales = async (items, incluye_iva) => {
   const detallesCalculados = [];
   let subtotalGeneral = 0;
 
   for (const item of items) {
-    const { servicio_id, vehiculo_id, cantidad_km, cantidad_horas } = item;
+    const { 
+      servicio_id, 
+      vehiculo_id, 
+      cantidad_km, 
+      cantidad_horas,
+      costo_base_fijo_manual,
+      precio_hora_manual
+    } = item;
 
-    // 1. Obtener servicio y vehículo
     const servicio = await Servicio.findByPk(servicio_id);
     if (!servicio) {
       const error = new Error(`Servicio con ID ${servicio_id} no encontrado`);
@@ -32,12 +38,10 @@ const calcularTotales = async (items, incluye_iva) => {
       throw error;
     }
 
-    // 2. Preparar variables dinámicas para el cálculo
     let precioPorKmFijado = null;
     let kmDesde = null;
     let kmHasta = null;
 
-    // Solo buscamos tramos si el payload trae kilómetros
     if (cantidad_km) {
       if (cantidad_km <= 0) {
         const error = new Error(`La cantidad_km debe ser mayor a 0`);
@@ -47,13 +51,13 @@ const calcularTotales = async (items, incluye_iva) => {
 
       const tarifa = await TarifaTramo.findOne({
         where: {
-          vehiculo_id: vehiculo_id, // <-- Filtra por el vehículo actual
+          vehiculo_id: vehiculo_id,
           km_desde: {
-            [Op.lte]: cantidad_km   // <-- Equivalente a km_desde <= cantidad_km
+            [Op.lte]: cantidad_km
           }
         },
         attributes: ['km_desde', 'km_hasta', 'precio_por_km'],
-        order: [['km_desde', 'DESC']] // Asegura agarrar el tramo correcto más cercano
+        order: [['km_desde', 'DESC']] 
       });
 
       if (!tarifa) {
@@ -67,10 +71,16 @@ const calcularTotales = async (items, incluye_iva) => {
       kmHasta = tarifa.km_hasta;
     }
 
-    // 3. Armar el objeto de datos unificado
+    // 3. Armar el objeto de datos unificado priorizando la edición manual
     const datosCalculo = {
-      costoBaseFijo: Number(vehiculo.costo_base_fijo),
-      precioHora: Number(vehiculo.precio_hora),
+      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== null) 
+        ? Number(costo_base_fijo_manual) 
+        : Number(vehiculo.costo_base_fijo),
+        
+      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== null) 
+        ? Number(precio_hora_manual) 
+        : Number(vehiculo.precio_hora),
+        
       precioPorKm: precioPorKmFijado,
       cantidadKm: cantidad_km,
       cantidadHoras: cantidad_horas
@@ -80,14 +90,13 @@ const calcularTotales = async (items, incluye_iva) => {
     const estrategia = EstrategiaFactory.obtenerEstrategia(servicio.tipo_calculo);
     const subtotalItem = estrategia.calcular(datosCalculo);
 
-    // 5. Armar el Snapshot para auditoría histórica
+    // 5. Armar el Snapshot
     const snapshotPrecios = {
       servicio_nombre: servicio.nombre,
       tipo_calculo: servicio.tipo_calculo,
       vehiculo_nombre: vehiculo.nombre,
       costo_base_fijo: datosCalculo.costoBaseFijo,
       precio_hora: datosCalculo.precioHora,
-      // Usamos spread operator condicional para no guardar nulos innecesarios
       ...(cantidad_km && { 
         cantidad_km, 
         precio_por_km: precioPorKmFijado, 
@@ -117,7 +126,6 @@ const calcularTotales = async (items, incluye_iva) => {
 };
 
 const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) => {
-  // Validar cliente
   const cliente = await Cliente.findByPk(cliente_id);
   if (!cliente) {
     const error = new Error(`Cliente con ID ${cliente_id} no encontrado`);
@@ -125,17 +133,14 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
     throw error;
   }
 
-  // Recalcular totales (no confiar en frontend)
   const { detallesCalculados, subtotalGeneral, montoIva, totalFinal } = await calcularTotales(
     items,
     incluye_iva
   );
 
-  // Abrir transacción
   const transaction = await sequelize.transaction();
 
   try {
-    // Crear presupuesto
     const presupuesto = await Presupuesto.create(
       {
         cliente_id,
@@ -149,7 +154,6 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
       { transaction }
     );
 
-    // Mapear detalles con presupuesto_id
     const detallesParaCrear = detallesCalculados.map((detalle) => ({
       presupuesto_id: presupuesto.id,
       servicio_id: detalle.servicio_id,
@@ -160,18 +164,13 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
       snapshot_precios: detalle.snapshot_precios,
     }));
 
-    // Crear detalles en bulk
     await PresupuestoDetalle.bulkCreate(detallesParaCrear, { transaction });
-
-    // Commit
     await transaction.commit();
 
-    // Retornar presupuesto con detalles
     return await Presupuesto.findByPk(presupuesto.id, {
       include: [{ model: PresupuestoDetalle }],
     });
   } catch (error) {
-    // Rollback
     await transaction.rollback();
     throw error;
   }
@@ -179,13 +178,8 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
 
 const listarTodos = async (filtros = {}) => {
   const where = {};
-
-  if (filtros.estado) {
-    where.estado = filtros.estado;
-  }
-  if (filtros.cliente_id) {
-    where.cliente_id = filtros.cliente_id;
-  }
+  if (filtros.estado) where.estado = filtros.estado;
+  if (filtros.cliente_id) where.cliente_id = filtros.cliente_id;
 
   return await Presupuesto.findAll({
     where,
@@ -210,17 +204,13 @@ const buscarUno = async (id) => {
     error.status = 404;
     throw error;
   }
-
   return presupuesto;
 };
 
 const actualizarEstado = async (id, nuevoEstado) => {
   const estadosPermitidos = ['Pendiente', 'Aceptado', 'Anulado'];
-
   if (!estadosPermitidos.includes(nuevoEstado)) {
-    const error = new Error(
-      `Estado inválido. Debe ser uno de: ${estadosPermitidos.join(', ')}`
-    );
+    const error = new Error(`Estado inválido. Debe ser uno de: ${estadosPermitidos.join(', ')}`);
     error.status = 400;
     throw error;
   }
@@ -236,10 +226,4 @@ const actualizarEstado = async (id, nuevoEstado) => {
   return presupuesto;
 };
 
-module.exports = {
-  calcularTotales,
-  generarNuevo,
-  listarTodos,
-  buscarUno,
-  actualizarEstado,
-};
+module.exports = { calcularTotales, generarNuevo, listarTodos, buscarUno, actualizarEstado };

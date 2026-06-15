@@ -17,11 +17,15 @@ const WizardPresupuesto = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pasoActual, setPasoActual] = useState(1);
   const [serviciosAgregados, setServiciosAgregados] = useState([]);
-  const [totalesCalculados, setTotalesCalculados] = useState({}); // Ahora recibe el JSON completo del back
+  const [totalesCalculados, setTotalesCalculados] = useState({}); 
   const [presupuestoGenerado, setPresupuestoGenerado] = useState(null);
   const [incluyeIva, setIncluyeIva] = useState(false);
   
-  const [servicioActual, setServicioActual] = useState({ servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '' });
+  // NUEVO: Agregamos costo_base_fijo_manual y precio_hora_manual
+  const [servicioActual, setServicioActual] = useState({ 
+    servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '', costo_base_fijo_manual: '', precio_hora_manual: '' 
+  });
+  
   const [cliente, setCliente] = useState({ esNuevo: true, id: null, nombre_razon_social: '', telefono: '', cuit_dni: '' });
 
   useEffect(() => {
@@ -55,16 +59,18 @@ const WizardPresupuesto = () => {
       vehiculo_id: Number(vehiculoAsignadoId),
       cantidad_km: servicioActual.cantidad_km ? Number(servicioActual.cantidad_km) : 0,
       cantidad_horas: servicioActual.cantidad_horas ? Number(servicioActual.cantidad_horas) : 0,
+      // Pasamos los precios editados
+      costo_base_fijo_manual: servicioActual.costo_base_fijo_manual !== '' ? Number(servicioActual.costo_base_fijo_manual) : null,
+      precio_hora_manual: servicioActual.precio_hora_manual !== '' ? Number(servicioActual.precio_hora_manual) : null,
       nombre_servicio: servicioSeleccionado.nombre,
       nombre_vehiculo: vehiculoObj ? vehiculoObj.nombre : 'Sin vehículo',
       tipo_calculo: tipoCalculo
     };
 
     setServiciosAgregados([...serviciosAgregados, itemPayload]);
-    setServicioActual({ servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '' }); 
+    setServicioActual({ servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '', costo_base_fijo_manual: '', precio_hora_manual: '' }); 
   };
 
-  // NUEVA FUNCIÓN: Eliminar servicio del array
   const eliminarServicio = (indexToRemove) => {
     setServiciosAgregados(serviciosAgregados.filter((_, index) => index !== indexToRemove));
   };
@@ -72,8 +78,9 @@ const WizardPresupuesto = () => {
   const calcularTotales = async () => {
     try {
       setIsSubmitting(true);
-      const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas }) => ({
-        servicio_id, vehiculo_id, cantidad_km, cantidad_horas
+      // NUEVO: Rescatamos los precios manuales para el backend
+      const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual }) => ({
+        servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual
       }));
 
       const resultado = await presupuestosService.calcularPreview(itemsLimpios, incluyeIva);
@@ -98,8 +105,9 @@ const WizardPresupuesto = () => {
         clienteId = nuevoCliente.id;
       }
 
-      const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas }) => ({
-        servicio_id, vehiculo_id, cantidad_km, cantidad_horas
+      // NUEVO: Rescatamos los precios manuales para el backend
+      const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual }) => ({
+        servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual
       }));
 
       const presupuestoDb = await presupuestosService.crear({
@@ -135,7 +143,7 @@ const WizardPresupuesto = () => {
           setServicioActual={setServicioActual}
           serviciosAgregados={serviciosAgregados}
           agregarServicio={agregarServicio}
-          eliminarServicio={eliminarServicio} // Pasamos la función nueva
+          eliminarServicio={eliminarServicio} 
           incluyeIva={incluyeIva}
           setIncluyeIva={setIncluyeIva}
           isSubmitting={isSubmitting}
@@ -145,7 +153,7 @@ const WizardPresupuesto = () => {
       
       {pasoActual === 2 && (
         <Paso2Resumen 
-          totalesCalculados={totalesCalculados} // Pasamos el JSON del backend
+          totalesCalculados={totalesCalculados} 
           incluyeIva={incluyeIva}
           onAtras={() => setPasoActual(1)}
           onSiguiente={() => setPasoActual(3)}
