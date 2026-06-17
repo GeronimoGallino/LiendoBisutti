@@ -46,7 +46,7 @@ const Inicio = () => {
       >
         <div>
            <h2 className="text-2xl font-bold text-white">Generar Presupuesto</h2>
-           <p className="text-blue-200 text-sm">Crear nueva cotización de flete</p>
+           <p className="text-blue-200 text-sm">Crear nueva cotización</p>
         </div>
         <div className="text-4xl group-hover:scale-110 transition-transform">
            📝

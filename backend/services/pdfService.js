@@ -31,41 +31,35 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
 
   const logoBase64 = getBase64Image('logo.png');
 
-  // --- NUEVA LÓGICA DE CÁLCULOS PARA EL PDF ---
-  let subtotal_bruto = 0;
-  let descuento_total = 0;
-  let porcentaje_aplicado = 0;
+  let subtotal_bruto_acumulado = 0;
+  let porcentaje_descuento_aplicado = 0;
 
   const itemsMapeados = datosPresupuesto.PresupuestoDetalles.map(d => {
     const calculoPorHora = !!d.cantidad_horas;
+    const precioBrutoFila = Number(d.subtotal_item);
     
-    // Rescatamos el descuento del snapshot
-    const porcentaje = d.snapshot_precios.porcentaje_descuento || 0;
-    const subtotalNeto = Number(d.subtotal_item);
+    subtotal_bruto_acumulado += precioBrutoFila;
     
-    // Reconstruimos el valor original antes del descuento
-    let subtotalOriginal = subtotalNeto;
-    if (porcentaje > 0) {
-      subtotalOriginal = subtotalNeto / (1 - (porcentaje / 100));
-      porcentaje_aplicado = porcentaje; // Asumimos que es global para mostrarlo en el resumen
+    if (d.porcentaje_descuento > 0) {
+      porcentaje_descuento_aplicado = d.porcentaje_descuento;
     }
 
-    subtotal_bruto += subtotalOriginal;
-    descuento_total += (subtotalOriginal - subtotalNeto);
-
-    // Detectamos si es mudanza para el texto de los 2 ayudantes
     const esMudanza = d.snapshot_precios.tipo_calculo.includes('MUDANZA');
+    const precioBase = d.snapshot_precios.precio_por_km || d.snapshot_precios.precio_hora;
 
     return {
       servicio_nombre: d.Servicio.nombre,
       vehiculo_nombre: d.CategoriaVehiculo.nombre,
       cantidad: d.cantidad_km ? `${d.cantidad_km} KM` : `${d.cantidad_horas} Hs`,
-      precio_unitario: formatearMoneda(d.snapshot_precios.precio_por_km || d.snapshot_precios.precio_hora),
       es_por_hora: calculoPorHora,
-      es_mudanza: esMudanza, // Pasamos este flag al HTML
-      subtotal_item: formatearMoneda(subtotalNeto)
+      es_mudanza: esMudanza,
+      precio_unitario: formatearMoneda(precioBase),
+      subtotal_item: formatearMoneda(precioBrutoFila) // Renglón transparente en bruto
     };
   });
+
+  // La diferencia entre la suma de las celdas y el subtotal guardado en la DB es el descuento real
+  const descuento_total_num = subtotal_bruto_acumulado - Number(datosPresupuesto.subtotal_general);
 
   const htmlFinal = template({
     logo: logoBase64,
@@ -85,14 +79,12 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
     },
     
     items: itemsMapeados,
-
     modo_compacto: itemsMapeados.length > 5,
-    tiene_descuento: descuento_total > 0,
-    descuento_porcentaje: porcentaje_aplicado,
+    tiene_descuento: descuento_total_num > 0.01, // Tolerancia por flotantes
+    descuento_porcentaje: porcentaje_descuento_aplicado,
     
-    
-    subtotal_bruto: formatearMoneda(subtotal_bruto),
-    descuento_total: formatearMoneda(descuento_total),
+    subtotal_bruto: formatearMoneda(subtotal_bruto_acumulado),
+    descuento_total: formatearMoneda(descuento_total_num),
     subtotal_neto: formatearMoneda(datosPresupuesto.subtotal_general), 
     iva: formatearMoneda(datosPresupuesto.monto_iva_general),
     total: formatearMoneda(datosPresupuesto.total_final)

@@ -9,7 +9,7 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
 
   const aplicarDescuentoGlobal = () => {
     if (descuentoGlobal === '' || isNaN(descuentoGlobal) || Number(descuentoGlobal) < 0 || Number(descuentoGlobal) > 100) {
-      alert('Ingresa un porcentaje de descuento válido (0-100)');
+      alert('Ingresa un descuento válido (0-100)');
       return;
     }
     const descuentoNum = Number(descuentoGlobal);
@@ -18,13 +18,14 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
       porcentaje_descuento: descuentoNum
     }));
     setServiciosAgregados(serviciosActualizados);
-    setDescuentoGlobal(''); // Limpiamos el input tras aplicar
+    setDescuentoGlobal('');
   };
 
   const handleServicioChange = (e) => {
     const servId = e.target.value;
     const srv = catalogos.servicios.find(s => s.id === Number(servId));
     
+    // Si elige Alquiler Mula, autocompletamos el precio_hora porque el vehículo es automático
     let p_hora = '';
     if (srv && srv.tipo_calculo === 'ALQUILER_MULA') {
       const mulaDb = catalogos.vehiculos.find(v => v.nombre.toLowerCase().includes('mula'));
@@ -38,10 +39,11 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
       cantidad_horas: '',
       costo_base_fijo_manual: '',
       precio_hora_manual: p_hora,
-      porcentaje_descuento: '' 
+      porcentaje_descuento: ''
     });
   };
 
+  // NUEVO: Función para atrapar el cambio de vehículo y autocompletar el precio oficial en el input
   const handleVehiculoChange = (e) => {
     const vehiculo_id = e.target.value;
     const vehiculoObj = catalogos.vehiculos.find(v => v.id === Number(vehiculo_id));
@@ -66,7 +68,7 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
     <div className="flex flex-col gap-4 animate-fadeIn">
       <h2 className="text-xl font-bold text-gray-800">¿Qué vas a presupuestar?</h2>
       
-      {/* FORMULARIO DE CARGA LIMPÍSIMO */}
+      {/* FORMULARIO DE CARGA */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
         <select value={servicioActual.servicio_id} onChange={handleServicioChange} className="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg focus:outline-none focus:ring-2 focus:ring-brand">
           <option value="">Seleccionar Servicio...</option>
@@ -83,6 +85,7 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
               </select>
             </div>
             
+            {/* NUEVO INPUT EDITABLE */}
             {servicioActual.vehiculo_id && (
                <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
                  <div className="w-full">
@@ -92,6 +95,25 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                       value={servicioActual.costo_base_fijo_manual}
                       onChange={(e) => setServicioActual({...servicioActual, costo_base_fijo_manual: e.target.value})}
                       className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
+                    />
+                 </div>
+               </div>
+            )}
+
+            {/* DESCUENTO INDIVIDUAL */}
+            {servicioActual.vehiculo_id && (
+               <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
+                 <div className="w-full">
+                    <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={servicioActual.porcentaje_descuento}
+                      onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
+                      className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
+                      placeholder="0"
                     />
                  </div>
                </div>
@@ -109,6 +131,7 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
               </select>
             </div>
 
+            {/* NUEVO INPUT EDITABLE */}
             {servicioActual.vehiculo_id && (
                <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
                  <div className="w-full">
@@ -122,6 +145,25 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                  </div>
                </div>
             )}
+
+            {/* DESCUENTO INDIVIDUAL */}
+            {servicioActual.vehiculo_id && (
+               <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
+                 <div className="w-full">
+                    <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={servicioActual.porcentaje_descuento}
+                      onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
+                      className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
+                      placeholder="0"
+                    />
+                 </div>
+               </div>
+            )}
           </>
         )}
 
@@ -129,6 +171,7 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
           <>
             <input type="tel" placeholder="Cantidad de Horas" value={servicioActual.cantidad_horas} onChange={(e) => setServicioActual({...servicioActual, cantidad_horas: e.target.value})} className="w-full p-3 border border-gray-300 rounded-xl bg-gray-50 text-lg"/>
             
+            {/* NUEVO INPUT EDITABLE */}
             <div className="flex bg-gray-100 p-3 rounded-xl border border-gray-200 mt-1">
               <div className="w-full">
                 <label className="text-xs text-gray-600 block mb-1">Precio por Hora ($) - Editable</label>
@@ -137,6 +180,23 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                   value={servicioActual.precio_hora_manual}
                   onChange={(e) => setServicioActual({...servicioActual, precio_hora_manual: e.target.value})}
                   className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
+                />
+              </div>
+            </div>
+
+            {/* DESCUENTO INDIVIDUAL */}
+            <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
+              <div className="w-full">
+                <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={servicioActual.porcentaje_descuento}
+                  onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
+                  className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
+                  placeholder="0"
                 />
               </div>
             </div>
@@ -166,13 +226,8 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                     {srv.cantidad_km ? `${srv.cantidad_km} km ` : ''}
                     {srv.cantidad_horas ? `${srv.cantidad_horas} hs ` : ''}
                     | {srv.nombre_vehiculo}
+                    {srv.porcentaje_descuento > 0 && <span className="ml-2 font-semibold text-blue-600">Desc: {srv.porcentaje_descuento}%</span>}
                   </p>
-                  {/* Badge de descuento aplicado para feedback visual */}
-                  {srv.porcentaje_descuento > 0 && (
-                    <span className="inline-block mt-1 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md">
-                      {srv.porcentaje_descuento}% Off aplicado
-                    </span>
-                  )}
                 </div>
                 <button onClick={() => eliminarServicio(idx)} className="text-red-400 hover:text-red-600 active:scale-90 p-2 transition-transform">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -186,27 +241,30 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
             <span className="text-gray-700 font-medium text-sm">Este presupuesto incluye IVA</span>
           </label>
 
-          {/* DESCUENTO GLOBAL SUTIL */}
-          <div className="flex items-center gap-2 mt-2">
-            <input
-              type="tel"
-              min="0"
-              max="100"
-              maxLength="2"
-              value={descuentoGlobal}
-              onChange={(e) => setDescuentoGlobal(e.target.value)}
-              placeholder="Descuento global (%)"
-              className="flex-1 p-3 border border-gray-300 rounded-xl bg-white text-sm"
-            />
-            <button
-              onClick={aplicarDescuentoGlobal}
-              className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-3 rounded-xl font-bold text-sm active:scale-95 transition-colors"
-            >
-              Aplicar
-            </button>
+          {/* DESCUENTO GLOBAL */}
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex flex-col gap-3">
+            <h4 className="text-blue-900 font-bold text-sm">Aplicar Descuento a Todos los Servicios</h4>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={descuentoGlobal}
+                onChange={(e) => setDescuentoGlobal(e.target.value)}
+                placeholder="Ingresa %"
+                className="flex-1 p-3 border border-blue-300 rounded-xl bg-white text-base"
+              />
+              <button
+                onClick={aplicarDescuentoGlobal}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-bold active:scale-95 transition-colors"
+              >
+                Aplicar %
+              </button>
+            </div>
           </div>
 
-          <button onClick={onCalcular} disabled={isSubmitting} className="bg-brand text-white w-full py-4 rounded-xl font-bold shadow-md active:scale-95 mt-2 text-lg">
+          <button onClick={onCalcular} disabled={isSubmitting} className="bg-brand text-white w-full py-3 rounded-xl font-bold shadow-md active:scale-95 mt-1">
             {isSubmitting ? 'Calculando...' : 'Calcular Total ➔'}
           </button>
         </div>

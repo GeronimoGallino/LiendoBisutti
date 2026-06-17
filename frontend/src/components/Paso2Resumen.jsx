@@ -2,46 +2,24 @@ import React from 'react';
 import { formatearMoneda } from '../utils/formatters';
 
 const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) => {
-  // Calculamos los totales brutos y el monto de descuento "al vuelo"
-  let subtotalBruto = 0;
-  let descuentoTotal = 0;
-  let tieneDescuento = false;
-  let porcentajeMostrar = 0;
+  // Verificamos si hubo algún descuento aplicado usando la data limpia del back
+  const tieneDescuento = totalesCalculados.descuentoTotal > 0;
 
-  if (totalesCalculados.detallesCalculados) {
-    totalesCalculados.detallesCalculados.forEach(detalle => {
-      const porcentaje = detalle.porcentaje_descuento || 0;
-      const subtotalNeto = Number(detalle.subtotal_item) || 0;
-      
-      let subtotalOriginal = subtotalNeto;
-      if (porcentaje > 0) {
-        subtotalOriginal = subtotalNeto / (1 - (porcentaje / 100));
-        tieneDescuento = true;
-        porcentajeMostrar = porcentaje; // Tomamos el % para mostrarlo en el resumen global
-      }
-
-      subtotalBruto += subtotalOriginal;
-      descuentoTotal += (subtotalOriginal - subtotalNeto);
-    });
-  }
+  // Buscamos el porcentaje del primer ítem que tenga descuento para mostrarlo en la etiqueta global
+  const primerDetalleConDescuento = totalesCalculados.detallesCalculados?.find(d => d.porcentaje_descuento > 0);
+  const porcentajeMostrar = primerDetalleConDescuento ? primerDetalleConDescuento.porcentaje_descuento : 0;
 
   return (
     <div className="flex flex-col gap-4 animate-fadeIn">
       <h2 className="text-xl font-bold text-gray-800">Resumen de Cotización</h2>
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
         
-        {/* LISTA DESGLOSADA POR SERVICIO */}
+        {/* LISTA DESGLOSADA POR SERVICIO (Muestra precios BRUTOS) */}
         {totalesCalculados.detallesCalculados?.map((detalle, idx) => (
           <div key={idx} className="flex justify-between border-b pb-3 text-gray-700">
             <div>
               <p className="font-bold text-sm text-gray-800">
                 {detalle.snapshot_precios.servicio_nombre}
-                {/* Etiqueta visual si este ítem tiene descuento */}
-                {detalle.porcentaje_descuento > 0 && (
-                  <span className="text-green-600 text-xs ml-2 font-bold">
-                    ({detalle.porcentaje_descuento}% Off)
-                  </span>
-                )}
               </p>
               <p className="text-xs text-gray-500">
                 {detalle.snapshot_precios.cantidad_km ? `${detalle.snapshot_precios.cantidad_km} km ` : ''}
@@ -49,34 +27,30 @@ const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) =
                 | {detalle.snapshot_precios.vehiculo_nombre}
               </p>
             </div>
-            {/* SUBTOTAL INDIVIDUAL NETO (Ya viene con descuento del backend) */}
+            {/* Muestra el Subtotal bruto individual */}
             <p className="font-bold text-gray-800">{formatearMoneda(detalle.subtotal_item)}</p>
           </div>
         ))}
         
-        {/* DESGLOSE FINAL (SUBTOTAL + DESCUENTO + IVA) */}
+        {/* DESGLOSE FINAL LINEAL */}
         <div className="flex flex-col gap-1 pt-2">
           
-          {tieneDescuento ? (
+          <div className="flex justify-between items-center text-gray-500 text-sm">
+            <p>Subtotal de servicios:</p>
+            <p>{formatearMoneda(totalesCalculados.subtotalBruto)}</p>
+          </div>
+
+          {tieneDescuento && (
             <>
-              <div className="flex justify-between items-center text-gray-500 text-sm">
-                <p>Subtotal original:</p>
-                <p>{formatearMoneda(subtotalBruto)}</p>
-              </div>
-              <div className="flex justify-between items-center text-green-600 text-sm font-bold bg-green-50 p-1 rounded">
+              <div className="flex justify-between items-center text-green-600 text-sm font-bold bg-green-50 p-1.5 rounded my-1">
                 <p>Descuento ({porcentajeMostrar}%):</p>
-                <p>- {formatearMoneda(descuentoTotal)}</p>
+                <p>- {formatearMoneda(totalesCalculados.descuentoTotal)}</p>
               </div>
-              <div className="flex justify-between items-center text-gray-600 text-sm font-semibold mt-1">
-                <p>Subtotal con descuento:</p>
+              <div className="flex justify-between items-center text-gray-600 text-sm font-semibold">
+                <p>Subtotal Neto:</p>
                 <p>{formatearMoneda(totalesCalculados.subtotalGeneral)}</p>
               </div>
             </>
-          ) : (
-            <div className="flex justify-between items-center text-gray-500 text-sm">
-              <p>Subtotal de servicios:</p>
-              <p>{formatearMoneda(totalesCalculados.subtotalGeneral)}</p>
-            </div>
           )}
           
           {incluyeIva && (

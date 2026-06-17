@@ -74,11 +74,11 @@ const calcularTotales = async (items, incluye_iva) => {
 
     // 3. Armar el objeto de datos unificado priorizando la edición manual
     const datosCalculo = {
-      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== '') 
+      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== null) 
         ? Number(costo_base_fijo_manual) 
         : Number(vehiculo.costo_base_fijo),
         
-      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== '') 
+      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== null) 
         ? Number(precio_hora_manual) 
         : Number(vehiculo.precio_hora),
         
