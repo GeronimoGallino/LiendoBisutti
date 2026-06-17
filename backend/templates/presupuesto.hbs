@@ -10,26 +10,36 @@
             --fondo-gris: #f8f9fa;
         }
 
+        /* Configuramos el tamaño de hoja y evitamos márgenes nativos del navegador */
+        @page {
+            size: A4;
+            margin: 0; 
+        }
+
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             color: var(--gris-texto);
             line-height: 1.6;
-            background-color: #F5F7F8;
+            background-color: #fff;
+            box-sizing: border-box;
         }
 
+        /* Flexbox para empujar el pie de página siempre al fondo */
         .document-wrapper {
             padding: 50px 60px;
-            position: relative;
-            min-height: 1000px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ocupa el 100% del alto de la página A4 */
+            box-sizing: border-box;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             border-bottom: 1px solid #eee;
             padding-bottom: 30px;
         }
@@ -51,34 +61,22 @@
             color: var(--gris-suave);
         }
 
-        .empresa-contacto div {
-            margin-bottom: 3px;
-        }
+        .empresa-contacto div { margin-bottom: 3px; }
 
-        .presupuesto-meta {
-            text-align: right;
-        }
-
+        .presupuesto-meta { text-align: right; }
+        
         .presupuesto-meta h1 {
             color: var(--rojo-premium);
             margin: 0;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 300;
             letter-spacing: 1px;
         }
 
-        .meta-box {
-            margin-top: 15px;
-            font-size: 14px;
-        }
+        .meta-box { margin-top: 15px; font-size: 14px; }
+        .meta-box span { color: var(--gris-suave); }
 
-        .meta-box span {
-            color: var(--gris-suave);
-        }
-
-        .cliente-section {
-            margin-bottom: 50px;
-        }
+        .cliente-section { margin-bottom: 30px; }
 
         .cliente-header {
             color: var(--rojo-premium);
@@ -92,25 +90,29 @@
         .cliente-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 10px 20px;
         }
 
-        .cliente-dato {
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+        .cliente-dato { font-size: 14px; }
+        .cliente-dato strong { color: #555; width: 90px; display: inline-block; }
 
-        .cliente-dato strong {
-            color: #555;
-            width: 90px;
-            display: inline-block;
+        /* MAGIA PARA TABLAS MULTI-PÁGINA */
+        .main-content {
+            flex: 1; /* Ocupa todo el espacio disponible empujando el footer */
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            page-break-inside: auto;
         }
+
+        /* Si hay hoja 2, repite los encabezados de columna */
+        thead { display: table-header-group; }
+        
+        /* Evita que una fila se corte por la mitad si cae justo en el borde de la hoja */
+        tr { page-break-inside: avoid; page-break-after: auto; }
 
         th {
             text-align: left;
@@ -118,78 +120,104 @@
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: var(--gris-suave);
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            padding: 12px 10px;
+            border-bottom: 2px solid #eee;
         }
 
         td {
-            padding: 18px 15px;
+            padding: 15px 10px;
             font-size: 14px;
             border-bottom: 1px solid #f2f2f2;
+            vertical-align: top;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+        tr:last-child td { border-bottom: none; }
 
-        .col-detalle { width: 50%; }
+        .col-detalle { width: 45%; }
         .col-cantidad { width: 15%; text-align: center; }
-        .col-precio { width: 17%; text-align: right; }
-        .col-total { width: 18%; text-align: right; font-weight: bold; color: #000; }
+        .col-precio { width: 20%; text-align: right; }
+        .col-total { width: 20%; text-align: right; font-weight: bold; color: #000; }
 
-        .totales-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 20px;
+        /* MODO COMPACTO: Si hay muchos ítems, achicamos paddings y fuente */
+        body.compacto td { padding: 10px; font-size: 13px; }
+        body.compacto .header { margin-bottom: 20px; padding-bottom: 20px; }
+        body.compacto .cliente-section { margin-bottom: 20px; }
+
+        /* FOOTER UNIFICADO (Totales + Aclaraciones) */
+        .footer-wrapper {
+            margin-top: auto; /* Se pega al final del main-content / de la hoja */
+            page-break-inside: avoid; /* Todo el bloque de cierre no se puede dividir */
+            padding-top: 20px;
         }
+
+        .totales-y-aclaraciones {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .info-adicional {
+            flex: 1; /* Toma el espacio izquierdo */
+            background-color: var(--fondo-gris);
+            border-left: 4px solid var(--rojo-premium);
+            padding: 15px;
+            font-size: 12px;
+            color: var(--gris-texto);
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .info-adicional strong.titulo {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--rojo-premium);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+        }
+
+        .info-adicional ul { margin: 0; padding-left: 20px; }
+        .info-adicional li { margin-bottom: 5px; }
 
         .resumen-table {
-            width: 35%;
+            width: 300px; /* Ancho fijo para los totales a la derecha */
             border-collapse: collapse;
         }
 
         .resumen-table td {
-            padding: 10px 15px;
+            padding: 8px 15px;
             font-size: 14px;
-            border-bottom: none;
         }
 
-        .resumen-label {
-            color: var(--gris-suave);
-            text-align: right;
-        }
+        .resumen-label { color: var(--gris-suave); text-align: right; }
+        .resumen-value { text-align: right; }
 
-        .resumen-value {
-            text-align: right;
-        }
+        .fila-descuento .resumen-label,
+        .fila-descuento .resumen-value { color: #16a34a; font-weight: bold; }
 
         .resumen-total {
             background: var(--fondo-gris);
             font-weight: bold;
             color: #000;
+            border-top: 2px solid #ddd;
         }
 
-        .resumen-total .resumen-label {
-            color: var(--rojo-premium);
-            font-size: 16px;
-        }
-
-        .resumen-total .resumen-value {
-            font-size: 20px;
-        }
+        .resumen-total .resumen-label { color: var(--rojo-premium); font-size: 15px; }
+        .resumen-total .resumen-value { font-size: 18px; }
 
         .nota-final {
-            position: absolute;
-            bottom: 60px;
-            left: 60px;
-            font-size: 12px;
+            text-align: center;
+            font-size: 11px;
             color: var(--gris-suave);
-            max-width: 60%;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
     </style>
 </head>
-<body>
+<body class="{{#if modo_compacto}}compacto{{/if}}">
     <div class="document-wrapper">
+        
         <div class="header">
             <div class="logo-and-contact">
                 <div class="logo">
@@ -224,59 +252,90 @@
             </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-detalle">Descripción del Servicio</th>
-                    <th class="col-cantidad">Cantidad</th>
-                    <th class="col-precio">Precio Unit.</th>
-                    <th class="col-total">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each items}}
-                <tr>
-                    <td class="col-detalle">
-                        <strong>{{this.servicio_nombre}}</strong><br>
-                        <span style="color:var(--gris-suave); font-size:12px;">Vehículo: {{this.vehiculo_nombre}}</span>
-                    </td>
-                    <td class="col-cantidad">{{this.cantidad}}</td>
-                    
-                    <td class="col-precio">
-                        {{#if this.es_por_hora}}
-                            $ {{this.precio_unitario}}
-                        {{else}}
-                            -
-                        {{/if}}
-                    </td>
-                    
-                    <td class="col-total">$ {{this.subtotal_item}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-
-        <div class="totales-wrapper">
-            <table class="resumen-table">
-                <tr>
-                    <td class="resumen-label">Subtotal</td>
-                    <td class="resumen-value">$ {{subtotal}}</td>
-                </tr>
-                <tr>
-                    <td class="resumen-label">IVA (21%)</td>
-                    <td class="resumen-value">$ {{iva}}</td>
-                </tr>
-                <tr class="resumen-total">
-                    <td class="resumen-label">Total</td>
-                    <td class="resumen-value">$ {{total}}</td>
-                </tr>
+        <div class="main-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-detalle">Descripción del Servicio</th>
+                        <th class="col-cantidad">Cantidad</th>
+                        <th class="col-precio">Precio Unit.</th>
+                        <th class="col-total">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each items}}
+                    <tr>
+                        <td class="col-detalle">
+                            <strong>{{this.servicio_nombre}}</strong><br>
+                            <span style="color:var(--gris-suave); font-size:12px;">Vehículo: {{this.vehiculo_nombre}}</span>
+                            
+                            {{#if this.es_mudanza}}
+                                <br><span style="color:var(--rojo-premium); font-size:11px; font-weight:bold;">+ Incluye el servicio de 2 ayudantes.</span>
+                            {{/if}}
+                        </td>
+                        <td class="col-cantidad">{{this.cantidad}}</td>
+                        
+                        <td class="col-precio">
+                            {{#if this.es_por_hora}}
+                                 {{this.precio_unitario}}
+                            {{else}}
+                                -
+                            {{/if}}
+                        </td>
+                        
+                        <td class="col-total"> {{this.subtotal_item}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
             </table>
         </div>
 
-        <div class="nota-final">
-            <p>Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
-            Liendo Bissutti SAS agradece su confianza.</p>
+        <div class="footer-wrapper">
+            
+            <div class="totales-y-aclaraciones">
+                <div class="info-adicional">
+                    <strong class="titulo">Aclaraciones y Adicionales</strong>
+                    <ul>
+                        <li><strong>Servicio de ayudante extra</strong> (adicional a los 2 incluidos en mudanzas): $ X por hora por ayudante.</li>
+                        <li><strong>Adicional por escalera o soga</strong> (hasta 70Kg): $ X por piso.</li>
+                    </ul>
+                </div>
+
+                <table class="resumen-table">
+                    <tr>
+                        <td class="resumen-label">Subtotal</td>
+                        <td class="resumen-value"> {{subtotal_bruto}}</td>
+                    </tr>
+                    
+                    {{#if tiene_descuento}}
+                    <tr class="fila-descuento">
+                        <td class="resumen-label">Descuento ({{descuento_porcentaje}}%)</td>
+                        <td class="resumen-value">-  {{descuento_total}}</td>
+                    </tr>
+                    <tr>
+                        <td class="resumen-label">Subtotal Neto</td>
+                        <td class="resumen-value"> {{subtotal_neto}}</td>
+                    </tr>
+                    {{/if}}
+
+                    <tr>
+                        <td class="resumen-label">IVA (21%)</td>
+                        <td class="resumen-value"> {{iva}}</td>
+                    </tr>
+                    <tr class="resumen-total">
+                        <td class="resumen-label">Total Final</td>
+                        <td class="resumen-value"> {{total}}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="nota-final">
+                Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
+                <strong>Liendo Bissutti SAS</strong> agradece su confianza.
+            </div>
+
         </div>
+
     </div>
 </body>
 </html>

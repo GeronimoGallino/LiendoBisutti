@@ -15,13 +15,14 @@ const calcularTotales = async (items, incluye_iva) => {
   let subtotalGeneral = 0;
 
   for (const item of items) {
-    const { 
-      servicio_id, 
-      vehiculo_id, 
-      cantidad_km, 
+    const {
+      servicio_id,
+      vehiculo_id,
+      cantidad_km,
       cantidad_horas,
       costo_base_fijo_manual,
-      precio_hora_manual
+      precio_hora_manual,
+      porcentaje_descuento = 0
     } = item;
 
     const servicio = await Servicio.findByPk(servicio_id);
@@ -73,11 +74,11 @@ const calcularTotales = async (items, incluye_iva) => {
 
     // 3. Armar el objeto de datos unificado priorizando la edición manual
     const datosCalculo = {
-      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== null) 
+      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== '') 
         ? Number(costo_base_fijo_manual) 
         : Number(vehiculo.costo_base_fijo),
         
-      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== null) 
+      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== '') 
         ? Number(precio_hora_manual) 
         : Number(vehiculo.precio_hora),
         
@@ -88,7 +89,11 @@ const calcularTotales = async (items, incluye_iva) => {
 
     // 4. APLICAR PATRÓN STRATEGY
     const estrategia = EstrategiaFactory.obtenerEstrategia(servicio.tipo_calculo);
-    const subtotalItem = estrategia.calcular(datosCalculo);
+    let subtotalItem = estrategia.calcular(datosCalculo);
+
+    // Aplicar descuento porcentual
+    const descuentoAplicado = (porcentaje_descuento / 100) * subtotalItem;
+    subtotalItem = subtotalItem - descuentoAplicado;
 
     // 5. Armar el Snapshot
     const snapshotPrecios = {
@@ -97,13 +102,14 @@ const calcularTotales = async (items, incluye_iva) => {
       vehiculo_nombre: vehiculo.nombre,
       costo_base_fijo: datosCalculo.costoBaseFijo,
       precio_hora: datosCalculo.precioHora,
-      ...(cantidad_km && { 
-        cantidad_km, 
-        precio_por_km: precioPorKmFijado, 
-        km_desde: kmDesde, 
-        km_hasta: kmHasta 
+      ...(cantidad_km && {
+        cantidad_km,
+        precio_por_km: precioPorKmFijado,
+        km_desde: kmDesde,
+        km_hasta: kmHasta
       }),
-      ...(cantidad_horas && { cantidad_horas })
+      ...(cantidad_horas && { cantidad_horas }),
+      porcentaje_descuento: Number(porcentaje_descuento)
     };
 
     subtotalGeneral += subtotalItem;
@@ -111,6 +117,7 @@ const calcularTotales = async (items, incluye_iva) => {
       ...item,
       subtotal_item: subtotalItem,
       snapshot_precios: snapshotPrecios,
+      porcentaje_descuento: Number(porcentaje_descuento)
     });
   }
 
@@ -162,6 +169,7 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
       cantidad_horas: detalle.cantidad_horas || null,
       subtotal_item: detalle.subtotal_item,
       snapshot_precios: detalle.snapshot_precios,
+      porcentaje_descuento: detalle.porcentaje_descuento || 0
     }));
 
     await PresupuestoDetalle.bulkCreate(detallesParaCrear, { transaction });
