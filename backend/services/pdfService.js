@@ -54,12 +54,14 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
       es_por_hora: calculoPorHora,
       es_mudanza: esMudanza,
       precio_unitario: formatearMoneda(precioBase),
-      subtotal_item: formatearMoneda(precioBrutoFila) // Renglón transparente en bruto
+      subtotal_item: formatearMoneda(precioBrutoFila) 
     };
   });
 
-  // La diferencia entre la suma de las celdas y el subtotal guardado en la DB es el descuento real
   const descuento_total_num = subtotal_bruto_acumulado - Number(datosPresupuesto.subtotal_general);
+  
+  // VERIFICAMOS SI ES UN COMPROBANTE
+  const esComprobante = datosPresupuesto.estado === 'Comprobante';
 
   const htmlFinal = template({
     logo: logoBase64,
@@ -80,14 +82,16 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
     
     items: itemsMapeados,
     modo_compacto: itemsMapeados.length > 5,
-    tiene_descuento: descuento_total_num > 0.01, // Tolerancia por flotantes
+    tiene_descuento: descuento_total_num > 0.01, 
     descuento_porcentaje: porcentaje_descuento_aplicado,
     
     subtotal_bruto: formatearMoneda(subtotal_bruto_acumulado),
     descuento_total: formatearMoneda(descuento_total_num),
     subtotal_neto: formatearMoneda(datosPresupuesto.subtotal_general), 
     iva: formatearMoneda(datosPresupuesto.monto_iva_general),
-    total: formatearMoneda(datosPresupuesto.total_final)
+    total: formatearMoneda(datosPresupuesto.total_final),
+    
+    es_comprobante: esComprobante // INYECTAMOS EL FLAG AL HTML
   });
 
   const browser = await puppeteer.launch({ headless: 'new' });

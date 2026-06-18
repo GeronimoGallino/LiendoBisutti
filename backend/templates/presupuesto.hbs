@@ -234,7 +234,11 @@
                 </div>
             </div>
             <div class="presupuesto-meta">
-                <h1>PRESUPUESTO</h1>
+                {{#if es_comprobante}}
+                    <h1>COSTO DE SERVICIO</h1>
+                {{else}}
+                    <h1>PRESUPUESTO</h1>
+                {{/if}}
                 <div class="meta-box">
                     <div><span>Número:</span> <strong>{{id_presupuesto}}</strong></div>
                     <div><span>Fecha:</span> <strong>{{fecha}}</strong></div>
@@ -292,6 +296,9 @@
 
         <div class="footer-wrapper">
             
+            {{#if es_comprobante}}
+            <div class="totales-y-aclaraciones" style="justify-content: flex-end;">
+            {{else}}
             <div class="totales-y-aclaraciones">
                 <div class="info-adicional">
                     <strong class="titulo">Aclaraciones y Adicionales</strong>
@@ -300,6 +307,7 @@
                         <li><strong>Adicional por escalera o soga</strong> (hasta 70Kg): $ X por piso.</li>
                     </ul>
                 </div>
+            {{/if}}
 
                 <table class="resumen-table">
                     <tr>
@@ -330,7 +338,9 @@
             </div>
 
             <div class="nota-final">
-                Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
+                {{#unless es_comprobante}}
+                    Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
+                {{/unless}}
                 <strong>Liendo Bissutti SAS</strong> agradece su confianza.
             </div>
 

@@ -12,7 +12,8 @@ const IVA_RATE = 0.21;
 
 const calcularTotales = async (items, incluye_iva) => {
   const detallesCalculados = [];
-  let subtotalGeneral = 0;
+  let subtotalGeneralBruto = 0;
+  let montoDescuentoTotal = 0;
 
   for (const item of items) {
     const {
@@ -53,9 +54,7 @@ const calcularTotales = async (items, incluye_iva) => {
       const tarifa = await TarifaTramo.findOne({
         where: {
           vehiculo_id: vehiculo_id,
-          km_desde: {
-            [Op.lte]: cantidad_km
-          }
+          km_desde: { [Op.lte]: cantidad_km }
         },
         attributes: ['km_desde', 'km_hasta', 'precio_por_km'],
         order: [['km_desde', 'DESC']] 
@@ -72,13 +71,12 @@ const calcularTotales = async (items, incluye_iva) => {
       kmHasta = tarifa.km_hasta;
     }
 
-    // 3. Armar el objeto de datos unificado priorizando la edición manual
     const datosCalculo = {
-      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== null) 
+      costoBaseFijo: (costo_base_fijo_manual !== undefined && costo_base_fijo_manual !== null && costo_base_fijo_manual !== '') 
         ? Number(costo_base_fijo_manual) 
         : Number(vehiculo.costo_base_fijo),
         
-      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== null) 
+      precioHora: (precio_hora_manual !== undefined && precio_hora_manual !== null && precio_hora_manual !== '') 
         ? Number(precio_hora_manual) 
         : Number(vehiculo.precio_hora),
         
@@ -87,15 +85,13 @@ const calcularTotales = async (items, incluye_iva) => {
       cantidadHoras: cantidad_horas
     };
 
-    // 4. APLICAR PATRÓN STRATEGY
     const estrategia = EstrategiaFactory.obtenerEstrategia(servicio.tipo_calculo);
-    let subtotalItem = estrategia.calcular(datosCalculo);
+    // OPCION A: El subtotal del item queda puro (BRUTO)
+    const subtotalItemBruto = estrategia.calcular(datosCalculo);
 
-    // Aplicar descuento porcentual
-    const descuentoAplicado = (porcentaje_descuento / 100) * subtotalItem;
-    subtotalItem = subtotalItem - descuentoAplicado;
+    // Calculamos cuánta plata representa el descuento de este ítem
+    const descuentoAplicado = (Number(porcentaje_descuento) / 100) * subtotalItemBruto;
 
-    // 5. Armar el Snapshot
     const snapshotPrecios = {
       servicio_nombre: servicio.nombre,
       tipo_calculo: servicio.tipo_calculo,
@@ -112,27 +108,34 @@ const calcularTotales = async (items, incluye_iva) => {
       porcentaje_descuento: Number(porcentaje_descuento)
     };
 
-    subtotalGeneral += subtotalItem;
+    // Acumulamos los totales globales
+    subtotalGeneralBruto += subtotalItemBruto;
+    montoDescuentoTotal += descuentoAplicado;
+
     detallesCalculados.push({
       ...item,
-      subtotal_item: subtotalItem,
+      subtotal_item: subtotalItemBruto, // Guardamos el valor BRUTO en la fila
       snapshot_precios: snapshotPrecios,
       porcentaje_descuento: Number(porcentaje_descuento)
     });
   }
 
-  const montoIva = incluye_iva ? subtotalGeneral * IVA_RATE : 0;
-  const totalFinal = subtotalGeneral + montoIva;
+  // El subtotal neto es lo que va a impactar en la tabla 'presupuestos'
+  const subtotalGeneralNeto = subtotalGeneralBruto - montoDescuentoTotal;
+  const montoIva = incluye_iva ? subtotalGeneralNeto * IVA_RATE : 0;
+  const totalFinal = subtotalGeneralNeto + montoIva;
 
   return {
     detallesCalculados,
-    subtotalGeneral: Number(subtotalGeneral.toFixed(2)),
+    subtotalBruto: Number(subtotalGeneralBruto.toFixed(2)),     // NUEVO: Suma de filas puras
+    descuentoTotal: Number(montoDescuentoTotal.toFixed(2)),   // NUEVO: Total de plata ahorrada
+    subtotalGeneral: Number(subtotalGeneralNeto.toFixed(2)), // El neto que va a la DB (Bruto - Descuento)
     montoIva: Number(montoIva.toFixed(2)),
     totalFinal: Number(totalFinal.toFixed(2)),
   };
 };
 
-const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) => {
+const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30, es_comprobante = false) => {
   const cliente = await Cliente.findByPk(cliente_id);
   if (!cliente) {
     const error = new Error(`Cliente con ID ${cliente_id} no encontrado`);
@@ -151,10 +154,11 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
     const presupuesto = await Presupuesto.create(
       {
         cliente_id,
-        estado: 'Pendiente',
+        // ESTADO DINÁMICO
+        estado: es_comprobante ? 'Comprobante' : 'Pendiente',
         incluye_iva,
         validez_dias,
-        subtotal_general: subtotalGeneral,
+        subtotal_general: subtotalGeneral, 
         monto_iva_general: montoIva,
         total_final: totalFinal,
       },
@@ -167,7 +171,7 @@ const generarNuevo = async (cliente_id, items, incluye_iva, validez_dias = 30) =
       vehiculo_id: detalle.vehiculo_id,
       cantidad_km: detalle.cantidad_km || null,
       cantidad_horas: detalle.cantidad_horas || null,
-      subtotal_item: detalle.subtotal_item,
+      subtotal_item: detalle.subtotal_item, 
       snapshot_precios: detalle.snapshot_precios,
       porcentaje_descuento: detalle.porcentaje_descuento || 0
     }));

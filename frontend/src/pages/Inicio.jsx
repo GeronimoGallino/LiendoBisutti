@@ -1,12 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 const Inicio = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    // Si tenés una función logout importada usala, sino quitala.
     navigate('/login');
   };
 
@@ -53,19 +52,19 @@ const Inicio = () => {
         </div>
       </button>
 
-      {/* --- ESPACIO PARA FUTUROS BOTONES --- */}
-      {/* 
+      {/* --- NUEVO BOTÓN: COSTO DE SERVICIO --- */}
       <button 
-        onClick={() => navigate('/historial')}
-        className="w-full bg-gray-800 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform"
+        onClick={() => navigate('/WizardPresupuesto', { state: { esComprobante: true } })}
+        className="relative w-full bg-emerald-600 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform group"
       >
         <div>
-           <h2 className="text-2xl font-bold text-white">Historial</h2>
-           <p className="text-gray-400 text-sm">Ver presupuestos anteriores</p>
+           <h2 className="text-2xl font-bold text-white">Generar Costo de Servicio</h2>
+           <p className="text-emerald-200 text-sm">Registrar viaje ya realizado (Comprobante)</p>
         </div>
-        <div className="text-4xl">📂</div>
-      </button> 
-      */}
+        <div className="text-4xl group-hover:scale-110 transition-transform">
+           🧾
+        </div>
+      </button>
 
     </div>
   );

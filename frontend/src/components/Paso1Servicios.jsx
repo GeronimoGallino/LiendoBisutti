@@ -100,24 +100,6 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                </div>
             )}
 
-            {/* DESCUENTO INDIVIDUAL */}
-            {servicioActual.vehiculo_id && (
-               <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
-                 <div className="w-full">
-                    <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={servicioActual.porcentaje_descuento}
-                      onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
-                      className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
-                      placeholder="0"
-                    />
-                 </div>
-               </div>
-            )}
           </>
         )}
 
@@ -145,25 +127,6 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                  </div>
                </div>
             )}
-
-            {/* DESCUENTO INDIVIDUAL */}
-            {servicioActual.vehiculo_id && (
-               <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
-                 <div className="w-full">
-                    <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={servicioActual.porcentaje_descuento}
-                      onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
-                      className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
-                      placeholder="0"
-                    />
-                 </div>
-               </div>
-            )}
           </>
         )}
 
@@ -180,23 +143,6 @@ const Paso1Servicios = ({ catalogos, servicioActual, setServicioActual, servicio
                   value={servicioActual.precio_hora_manual}
                   onChange={(e) => setServicioActual({...servicioActual, precio_hora_manual: e.target.value})}
                   className="w-full p-2 border border-gray-300 rounded-lg bg-white text-base"
-                />
-              </div>
-            </div>
-
-            {/* DESCUENTO INDIVIDUAL */}
-            <div className="flex bg-blue-50 p-3 rounded-xl border border-blue-200 mt-1">
-              <div className="w-full">
-                <label className="text-xs text-blue-600 block mb-1">Descuento (%) - Opcional</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={servicioActual.porcentaje_descuento}
-                  onChange={(e) => setServicioActual({...servicioActual, porcentaje_descuento: e.target.value})}
-                  className="w-full p-2 border border-blue-300 rounded-lg bg-white text-base"
-                  placeholder="0"
                 />
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // <-- IMPORTAMOS useLocation
 import { serviciosService } from '../services/servicios.service';
 import { clientesService } from '../services/clientes.service';
 import { presupuestosService } from '../services/presupuestos.service';
@@ -12,6 +12,8 @@ import Paso4Exito from '../components/Paso4Exito';
 
 const WizardPresupuesto = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // <-- INSTANCIAMOS useLocation
+  const esComprobante = location.state?.esComprobante || false; // <-- CAPTURAMOS EL FLAG
   
   const [catalogos, setCatalogos] = useState({ servicios: [], clientes: [], vehiculos: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,7 +23,6 @@ const WizardPresupuesto = () => {
   const [presupuestoGenerado, setPresupuestoGenerado] = useState(null);
   const [incluyeIva, setIncluyeIva] = useState(false);
   
-  // NUEVO: Agregamos costo_base_fijo_manual y precio_hora_manual
   const [servicioActual, setServicioActual] = useState({
     servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '', costo_base_fijo_manual: '', precio_hora_manual: '', porcentaje_descuento: ''
   });
@@ -59,7 +60,6 @@ const WizardPresupuesto = () => {
       vehiculo_id: Number(vehiculoAsignadoId),
       cantidad_km: servicioActual.cantidad_km ? Number(servicioActual.cantidad_km) : 0,
       cantidad_horas: servicioActual.cantidad_horas ? Number(servicioActual.cantidad_horas) : 0,
-      // Pasamos los precios editados
       costo_base_fijo_manual: servicioActual.costo_base_fijo_manual !== '' ? Number(servicioActual.costo_base_fijo_manual) : null,
       precio_hora_manual: servicioActual.precio_hora_manual !== '' ? Number(servicioActual.precio_hora_manual) : null,
       porcentaje_descuento: servicioActual.porcentaje_descuento !== '' ? Number(servicioActual.porcentaje_descuento) : 0,
@@ -79,7 +79,6 @@ const WizardPresupuesto = () => {
   const calcularTotales = async () => {
     try {
       setIsSubmitting(true);
-      // NUEVO: Rescatamos los precios manuales para el backend
       const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento }) => ({
         servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento
       }));
@@ -106,13 +105,16 @@ const WizardPresupuesto = () => {
         clienteId = nuevoCliente.id;
       }
 
-      // NUEVO: Rescatamos los precios manuales para el backend
       const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento }) => ({
         servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento
       }));
 
       const presupuestoDb = await presupuestosService.crear({
-        cliente_id: clienteId, items: itemsLimpios, incluye_iva: incluyeIva, validez_dias: 30
+        cliente_id: clienteId, 
+        items: itemsLimpios, 
+        incluye_iva: incluyeIva, 
+        validez_dias: 30,
+        es_comprobante: esComprobante // <-- ENVIAMOS EL FLAG AL BACKEND
       });
       
       setPresupuestoGenerado(presupuestoDb);

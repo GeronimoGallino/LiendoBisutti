@@ -20,6 +20,11 @@ const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) =
             <div>
               <p className="font-bold text-sm text-gray-800">
                 {detalle.snapshot_precios.servicio_nombre}
+                {detalle.porcentaje_descuento > 0 && (
+                  <span className="text-blue-600 text-xs ml-2 font-bold bg-blue-50 px-2 py-0.5 rounded">
+                    {detalle.porcentaje_descuento}% Off asignado
+                  </span>
+                )}
               </p>
               <p className="text-xs text-gray-500">
                 {detalle.snapshot_precios.cantidad_km ? `${detalle.snapshot_precios.cantidad_km} km ` : ''}
