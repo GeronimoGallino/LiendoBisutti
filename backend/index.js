@@ -12,6 +12,7 @@ const categoriasVehiculosRoutes = require('./routes/categoriasVehiculos');
 const serviciosRoutes = require('./routes/servicios');
 const tarifasTramosRoutes = require('./routes/tarifasTramos');
 const presupuestosRoutes = require('./routes/presupuestos');
+const preciosRoutes = require('./routes/precios');
 
 const app = express();  
 const port = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.use('/api/categorias-vehiculos', categoriasVehiculosRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/tarifas-tramos', tarifasTramosRoutes);
 app.use('/api/presupuestos', presupuestosRoutes);
+app.use('/api/precios', preciosRoutes);
 
 app.get('/', (req, res) => {
     res.send("Backend de Logística Funcionando 🚀");

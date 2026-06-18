@@ -66,6 +66,20 @@ const Inicio = () => {
         </div>
       </button>
 
+      {/* --- NUEVO BOTÓN: DASHBOARD DE PRECIOS --- */}
+      <button 
+        onClick={() => navigate('/precios')}
+        className="relative w-full bg-slate-800 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform group mt-2"
+      >
+        <div>
+           <h2 className="text-2xl font-bold text-white">Tarifas y Precios</h2>
+           <p className="text-slate-300 text-sm">Ajustar catálogo y aplicar aumentos</p>
+        </div>
+        <div className="text-4xl group-hover:scale-110 transition-transform">
+           📈
+        </div>
+      </button>
+
     </div>
   );
 };
