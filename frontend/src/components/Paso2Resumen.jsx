@@ -10,7 +10,7 @@ const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) =
   const porcentajeMostrar = primerDetalleConDescuento ? primerDetalleConDescuento.porcentaje_descuento : 0;
 
   return (
-    <div className="flex flex-col gap-4 animate-fadeIn">
+   <div className="p-4 flex flex-col gap-4 min-h-screen max-w-2xl mx-auto w-full">
       <h2 className="text-xl font-bold text-gray-800">Resumen de Cotización</h2>
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
         

@@ -11,7 +11,7 @@ const Paso4Exito = ({ presupuestoGenerado, cliente, onVolver, onCompartir }) => 
         Presupuesto #{presupuestoGenerado?.id} para <b>{cliente.nombre_razon_social}</b> guardado con éxito.
       </p>
       
-      <div className="flex flex-col gap-3 mt-6">
+      <div className="p-4 flex flex-col gap-4 min-h-screen max-w-2xl mx-auto w-full">
         <button onClick={onVolver} className="w-full py-4 bg-gray-800 text-white text-lg font-bold rounded-xl active:scale-95 shadow-md">
           Volver al Inicio
         </button>

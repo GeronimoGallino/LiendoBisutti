@@ -129,14 +129,29 @@ const WizardPresupuesto = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
+<div className="p-4 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <button onClick={() => navigate('/inicio')} className="text-gray-400 font-bold px-2 py-1">X</button>
+        
+        {/* Botón de volver actualizado */}
+        <button 
+          onClick={() => navigate('/')} 
+          className="bg-gray-200 p-2 rounded-lg text-gray-700 hover:bg-gray-300 active:scale-95 transition-all"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+
+        {/* Indicador de pasos */}
         <div className="flex gap-1">
           {[1, 2, 3, 4].map(step => (
-            <div key={step} className={`h-2 w-8 rounded-full ${pasoActual >= step ? 'bg-brand' : 'bg-gray-300'}`} />
+            <div 
+              key={step} 
+              className={`h-2 w-8 rounded-full ${pasoActual >= step ? 'bg-brand' : 'bg-gray-300'}`} 
+            />
           ))}
         </div>
+        
       </div>
 
       {pasoActual === 1 && (

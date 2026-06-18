@@ -2,7 +2,7 @@ import React from 'react';
 
 const Paso3Cliente = ({ cliente, setCliente, clientesDisponibles, isSubmitting, onAtras, onProcesar }) => {
   return (
-    <div className="flex flex-col gap-4 animate-fadeIn">
+   <div className="p-4 flex flex-col gap-4 min-h-screen max-w-2xl mx-auto w-full">
       <h2 className="text-xl font-bold text-gray-800">¿Para quién es?</h2>
       
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
