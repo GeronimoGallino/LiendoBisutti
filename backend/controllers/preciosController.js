@@ -34,7 +34,33 @@ const aplicarAumento = async (req, res) => {
   }
 };
 
+const actualizarVehiculo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { costo_base_fijo, precio_hora } = req.body;
+    await preciosService.actualizarPrecioVehiculo(id, costo_base_fijo, precio_hora);
+    const catalogoActualizado = await preciosService.obtenerCatalogoCompleto();
+    res.status(200).json({ mensaje: 'Vehículo actualizado', datos: catalogoActualizado });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar vehículo' });
+  }
+};
+
+const actualizarTramo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { precio_por_km } = req.body;
+    await preciosService.actualizarPrecioTramo(id, precio_por_km);
+    const catalogoActualizado = await preciosService.obtenerCatalogoCompleto();
+    res.status(200).json({ mensaje: 'Tramo actualizado', datos: catalogoActualizado });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar tramo' });
+  }
+};
+
 module.exports = {
   obtenerPrecios,
-  aplicarAumento
+  aplicarAumento,
+  actualizarVehiculo,
+  actualizarTramo
 };

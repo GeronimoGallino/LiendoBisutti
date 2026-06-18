@@ -1,5 +1,5 @@
 const express = require('express');
-const { obtenerPrecios, aplicarAumento } = require('../controllers/preciosController');
+const { obtenerPrecios, aplicarAumento, actualizarTramo, actualizarVehiculo } = require('../controllers/preciosController');
 
 const router = express.Router();
 
@@ -8,5 +8,8 @@ router.get('/', obtenerPrecios);
 
 // POST /api/precios/aumento-masivo -> Aplica el multiplicador a la base de datos
 router.post('/aumento-masivo', aplicarAumento);
+
+router.put('/vehiculo/:id', actualizarVehiculo);
+router.put('/tramo/:id', actualizarTramo); 
 
 module.exports = router;

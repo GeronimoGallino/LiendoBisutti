@@ -55,7 +55,23 @@ const aplicarAumentoMasivo = async (porcentaje) => {
   }
 };
 
+const actualizarPrecioVehiculo = async (id, costo_base_fijo, precio_hora) => {
+  const vehiculo = await CategoriaVehiculo.findByPk(id);
+  if (!vehiculo) throw new Error('Vehículo no encontrado');
+  await vehiculo.update({ costo_base_fijo, precio_hora });
+  return vehiculo;
+};
+
+const actualizarPrecioTramo = async (id, precio_por_km) => {
+  const tramo = await TarifaTramo.findByPk(id);
+  if (!tramo) throw new Error('Tramo no encontrado');
+  await tramo.update({ precio_por_km });
+  return tramo;
+};
+
 module.exports = {
   obtenerCatalogoCompleto,
-  aplicarAumentoMasivo
+  aplicarAumentoMasivo,
+  actualizarPrecioVehiculo,
+  actualizarPrecioTramo
 };

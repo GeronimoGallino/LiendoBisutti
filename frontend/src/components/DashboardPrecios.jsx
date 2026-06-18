@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { preciosService } from '../services/precios.service';
 import { formatearMoneda } from '../utils/formatters';
+import ModalConfirmacion from './ModalConfirmacion';
 
 const DashboardPrecios = () => {
   const navigate = useNavigate();
@@ -10,6 +11,13 @@ const DashboardPrecios = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Estados para Modal Nativo
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, titulo: '', mensaje: '', onConfirm: null, tipo: 'warning' });
+
+  // Estados para Edición Individual Inline
+  const [editandoVehiculo, setEditandoVehiculo] = useState({ id: null, base: '', hora: '' });
+  const [editandoTramo, setEditandoTramo] = useState({ id: null, precio_km: '' });
+
   const cargarPrecios = async () => {
     try {
       setIsLoading(true);
@@ -17,7 +25,6 @@ const DashboardPrecios = () => {
       setCatalogo(datos);
     } catch (error) {
       console.error("Error al cargar los precios", error);
-      alert("Hubo un problema al cargar el catálogo.");
     } finally {
       setIsLoading(false);
     }
@@ -27,41 +34,73 @@ const DashboardPrecios = () => {
     cargarPrecios();
   }, []);
 
-  const handleAumentoMasivo = async () => {
+  // --- LÓGICA AUMENTO MASIVO ---
+  const dispararAumentoMasivo = () => {
     const porcentajeNum = Number(porcentajeMasivo);
-    
     if (!porcentajeMasivo || isNaN(porcentajeNum) || porcentajeNum <= 0) {
-      alert("Por favor ingresá un porcentaje válido mayor a 0.");
+      alert("Ingresá un porcentaje válido mayor a 0.");
       return;
     }
 
-    const confirmacion = window.confirm(
-      `ATENCIÓN: Vas a aumentar un ${porcentajeNum}% a TODOS los vehículos y tramos de kilómetros.\n\n¿Estás completamente seguro de aplicar este cambio a la base de datos?`
-    );
-
-    if (confirmacion) {
-      try {
-        setIsSubmitting(true);
-        await preciosService.aplicarAumentoMasivo(porcentajeNum);
-        alert(`¡Éxito! El catálogo se actualizó con un aumento del ${porcentajeNum}%.`);
-        setPorcentajeMasivo('');
-        await cargarPrecios(); // Refrescamos la tabla para mostrar los nuevos valores
-      } catch (error) {
-        console.error("Error al aplicar aumento", error);
-        alert("Ocurrió un error al intentar aplicar el aumento masivo.");
-      } finally {
-        setIsSubmitting(false);
+    setModalConfig({
+      isOpen: true,
+      titulo: 'Aumento General de Tarifas',
+      mensaje: `Estás a punto de aplicar un aumento del ${porcentajeNum}% a TODOS los vehículos y kilómetros.\n\nEsta acción modificará la base de datos de forma permanente.`,
+      tipo: 'warning',
+      onConfirm: async () => {
+        setModalConfig({ ...modalConfig, isOpen: false });
+        try {
+          setIsSubmitting(true);
+          const response = await preciosService.aplicarAumentoMasivo(porcentajeNum);
+          setCatalogo(response.datos); // El backend ya devuelve el array actualizado
+          setPorcentajeMasivo('');
+        } catch (error) {
+          alert("Ocurrió un error al intentar aplicar el aumento masivo.");
+        } finally {
+          setIsSubmitting(false);
+        }
       }
+    });
+  };
+
+  // --- LÓGICA EDICIÓN INDIVIDUAL ---
+  const guardarEdicionVehiculo = async (id) => {
+    try {
+      const payload = { costo_base_fijo: Number(editandoVehiculo.base), precio_hora: Number(editandoVehiculo.hora) };
+      const response = await preciosService.actualizarVehiculo(id, payload);
+      setCatalogo(response.datos);
+      setEditandoVehiculo({ id: null, base: '', hora: '' });
+    } catch (error) {
+      alert("Error al guardar el vehículo.");
     }
   };
 
-  if (isLoading) {
-    return <div className="p-8 text-center text-gray-500 font-bold">Cargando catálogo de precios...</div>;
-  }
+  const guardarEdicionTramo = async (id) => {
+    try {
+      const payload = { precio_por_km: Number(editandoTramo.precio_km) };
+      const response = await preciosService.actualizarTramo(id, payload);
+      setCatalogo(response.datos);
+      setEditandoTramo({ id: null, precio_km: '' });
+    } catch (error) {
+      alert("Error al guardar el tramo.");
+    }
+  };
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500 font-bold">Cargando catálogo...</div>;
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen pb-20 animate-fadeIn">
       
+      {/* MODAL NATIVO */}
+      <ModalConfirmacion 
+        isOpen={modalConfig.isOpen}
+        titulo={modalConfig.titulo}
+        mensaje={modalConfig.mensaje}
+        tipo={modalConfig.tipo}
+        onConfirm={modalConfig.onConfirm}
+        onCancelar={() => setModalConfig({ ...modalConfig, isOpen: false })}
+      />
+
       {/* HEADER */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/inicio')} className="bg-gray-200 p-2 rounded-lg text-gray-700 hover:bg-gray-300 active:scale-95">
@@ -83,7 +122,6 @@ const DashboardPrecios = () => {
             <input
               type="tel"
               inputMode="decimal"
-              maxLength="2"
               value={porcentajeMasivo}
               onChange={(e) => setPorcentajeMasivo(e.target.value.replace(/[^0-9.]/g, ''))}
               placeholder="Ej: 15"
@@ -92,17 +130,16 @@ const DashboardPrecios = () => {
             <span className="absolute right-4 top-3 text-lg font-bold text-gray-400 pointer-events-none">%</span>
           </div>
           <button
-            onClick={handleAumentoMasivo}
+            onClick={dispararAumentoMasivo}
             disabled={isSubmitting || !porcentajeMasivo}
-            className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-bold py-3 px-4 rounded-xl active:scale-95 transition-all flex justify-center items-center gap-2 shadow-sm"
+            className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-bold py-3 px-4 rounded-xl active:scale-95 transition-all shadow-sm"
           >
             {isSubmitting ? 'Actualizando...' : 'Aplicar Aumento'}
           </button>
         </div>
       </div>
 
-      {/* VISUALIZADOR DEL CATÁLOGO ACTUAL */}
-      <h3 className="text-lg font-bold text-gray-700 mb-3 ml-1">Precios Actuales</h3>
+      <h3 className="text-lg font-bold text-gray-700 mb-3 ml-1">Edición Individual</h3>
       
       <div className="flex flex-col gap-4">
         {catalogo.map((vehiculo) => (
@@ -110,22 +147,44 @@ const DashboardPrecios = () => {
             
             {/* Cabecera del Vehículo */}
             <div className="bg-gray-100 p-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-2">
                 <h4 className="font-bold text-gray-800 text-lg">{vehiculo.nombre}</h4>
+                
+                {/* Botonera de Edición de Vehículo */}
+                {editandoVehiculo.id === vehiculo.id ? (
+                  <div className="flex gap-2">
+                    <button onClick={() => setEditandoVehiculo({id: null, base: '', hora: ''})} className="text-xs text-gray-500 font-bold px-2 py-1 bg-white border rounded">Cancelar</button>
+                    <button onClick={() => guardarEdicionVehiculo(vehiculo.id)} className="text-xs text-white bg-green-600 font-bold px-3 py-1 rounded shadow-sm">Guardar</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setEditandoVehiculo({ id: vehiculo.id, base: vehiculo.costo_base_fijo, hora: vehiculo.precio_hora })} className="text-brand hover:text-blue-700 bg-white p-1.5 rounded shadow-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  </button>
+                )}
               </div>
+
+              {/* Mostrar u Editar Precios del Vehículo */}
               <div className="flex gap-4 mt-2 text-sm">
-                <div className="bg-white px-3 py-1 rounded border border-gray-200">
-                  <span className="text-gray-500 text-xs block">Bajada Bandera</span>
-                  <span className="font-bold text-brand">{formatearMoneda(vehiculo.costo_base_fijo)}</span>
+                <div className="bg-white px-3 py-1.5 rounded border border-gray-200 flex-1">
+                  <span className="text-gray-500 text-xs block mb-1">Costo Fijo Base</span>
+                  {editandoVehiculo.id === vehiculo.id ? (
+                    <input type="tel" value={editandoVehiculo.base} onChange={(e) => setEditandoVehiculo({...editandoVehiculo, base: e.target.value})} className="w-full border-b-2 border-brand focus:outline-none font-bold text-gray-800" />
+                  ) : (
+                    <span className="font-bold text-gray-800">{formatearMoneda(vehiculo.costo_base_fijo)}</span>
+                  )}
                 </div>
-                <div className="bg-white px-3 py-1 rounded border border-gray-200">
-                  <span className="text-gray-500 text-xs block">Precio Hora</span>
-                  <span className="font-bold text-brand">{formatearMoneda(vehiculo.precio_hora)}</span>
+                <div className="bg-white px-3 py-1.5 rounded border border-gray-200 flex-1">
+                  <span className="text-gray-500 text-xs block mb-1">Precio Hora</span>
+                  {editandoVehiculo.id === vehiculo.id ? (
+                    <input type="tel" value={editandoVehiculo.hora} onChange={(e) => setEditandoVehiculo({...editandoVehiculo, hora: e.target.value})} className="w-full border-b-2 border-brand focus:outline-none font-bold text-gray-800" />
+                  ) : (
+                    <span className="font-bold text-gray-800">{formatearMoneda(vehiculo.precio_hora)}</span>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Tabla de Tramos (Si tiene) */}
+            {/* Tabla de Tramos */}
             {vehiculo.TarifaTramos && vehiculo.TarifaTramos.length > 0 && (
               <div className="p-0">
                 <table className="w-full text-sm text-left">
@@ -137,12 +196,25 @@ const DashboardPrecios = () => {
                   </thead>
                   <tbody>
                     {vehiculo.TarifaTramos.map(tramo => (
-                      <tr key={tramo.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                      <tr key={tramo.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 group">
                         <td className="px-4 py-3 font-medium text-gray-700">
                           {tramo.km_desde} a {tramo.km_hasta ? tramo.km_hasta : 'Más'} KM
                         </td>
-                        <td className="px-4 py-3 text-right font-bold text-gray-800">
-                          {formatearMoneda(tramo.precio_por_km)}
+                        <td className="px-4 py-3 text-right">
+                          {editandoTramo.id === tramo.id ? (
+                            <div className="flex justify-end items-center gap-2">
+                              <input type="tel" value={editandoTramo.precio_km} onChange={(e) => setEditandoTramo({...editandoTramo, precio_km: e.target.value})} className="w-20 border-b-2 border-brand text-right focus:outline-none font-bold" />
+                              <button onClick={() => guardarEdicionTramo(tramo.id)} className="text-green-600 font-bold p-1"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg></button>
+                              <button onClick={() => setEditandoTramo({id: null, precio_km: ''})} className="text-gray-400 p-1"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end items-center gap-3">
+                              <span className="font-bold text-gray-800">{formatearMoneda(tramo.precio_por_km)}</span>
+                              <button onClick={() => setEditandoTramo({ id: tramo.id, precio_km: tramo.precio_por_km })} className="text-gray-400 hover:text-brand opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -153,7 +225,6 @@ const DashboardPrecios = () => {
           </div>
         ))}
       </div>
-
     </div>
   );
 };
