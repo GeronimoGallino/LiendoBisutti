@@ -103,7 +103,12 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
     ]
   });
   const page = await browser.newPage();
-  await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
+  // networkidle2 permite hasta 2 peticiones de red activas (ideal si hay fuentes lentas)
+// O usamos un array de condiciones para mayor seguridad.
+await page.setContent(htmlFinal, { 
+  waitUntil: ['load', 'networkidle2'],
+  timeout: 60000 // Aumentamos el límite de tiempo a 60 segundos por las dudas
+});
 
   const pdfBuffer = await page.pdf({
     format: 'A4',
