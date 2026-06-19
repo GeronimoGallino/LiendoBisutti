@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // <-- IMPORTAMOS useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { serviciosService } from '../services/servicios.service';
 import { clientesService } from '../services/clientes.service';
 import { presupuestosService } from '../services/presupuestos.service';
@@ -12,8 +12,8 @@ import Paso4Exito from '../components/Paso4Exito';
 
 const WizardPresupuesto = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // <-- INSTANCIAMOS useLocation
-  const esComprobante = location.state?.esComprobante || false; // <-- CAPTURAMOS EL FLAG
+  const location = useLocation();
+  const esComprobante = location.state?.esComprobante || false;
   
   const [catalogos, setCatalogos] = useState({ servicios: [], clientes: [], vehiculos: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,12 +114,13 @@ const WizardPresupuesto = () => {
         items: itemsLimpios, 
         incluye_iva: incluyeIva, 
         validez_dias: 30,
-        es_comprobante: esComprobante // <-- ENVIAMOS EL FLAG AL BACKEND
+        es_comprobante: esComprobante
       });
       
       setPresupuestoGenerado(presupuestoDb);
-      if (accion === 'GENERAR_PDF') await presupuestosService.compartirODescargarPdf(presupuestoDb.id);
       
+      // Ya no generamos el PDF acá para no bloquear la UI.
+      // Pasamos inmediatamente al Paso 4.
       setPasoActual(4);
     } catch (error) {
       alert("Hubo un error al procesar el presupuesto");
@@ -129,10 +130,8 @@ const WizardPresupuesto = () => {
   };
 
   return (
-<div className="p-4 bg-gray-50 min-h-screen">
+    <div className="p-4 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        
-        {/* Botón de volver actualizado */}
         <button 
           onClick={() => navigate('/')} 
           className="bg-gray-200 p-2 rounded-lg text-gray-700 hover:bg-gray-300 active:scale-95 transition-all"
@@ -142,7 +141,6 @@ const WizardPresupuesto = () => {
           </svg>
         </button>
 
-        {/* Indicador de pasos */}
         <div className="flex gap-1">
           {[1, 2, 3, 4].map(step => (
             <div 
@@ -151,7 +149,6 @@ const WizardPresupuesto = () => {
             />
           ))}
         </div>
-        
       </div>
 
       {pasoActual === 1 && (
@@ -195,7 +192,6 @@ const WizardPresupuesto = () => {
           presupuestoGenerado={presupuestoGenerado}
           cliente={cliente}
           onVolver={() => navigate('/')}
-          onCompartir={() => presupuestosService.compartirODescargarPdf(presupuestoGenerado.id)}
         />
       )}
     </div>

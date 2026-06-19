@@ -9,30 +9,6 @@ const Inicio = () => {
     navigate('/login');
   };
 
-  const probarMenuNativo = async () => {
-    try {
-      // 1. Fabricamos un archivo de texto falso al instante (sin ir al backend)
-      const blob = new Blob(['Hola Tatero, si ves esto el menú funciona.'], { type: 'text/plain' });
-      const file = new File([blob], 'Presupuesto_Prueba.txt', { type: 'text/plain' });
-
-      // 2. Intentamos abrir el menú nativo inmediatamente
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'Prueba Liendo Bissutti',
-          text: 'Mirá este presupuesto de prueba.',
-        });
-        console.log('¡Menú nativo abierto con éxito!');
-      } else {
-        alert('Este navegador/dispositivo no soporta compartir archivos nativamente.');
-      }
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        alert(`Falló la prueba: ${error.message}`);
-      }
-    }
-  };
-
   return (
     <div className="p-4 flex flex-col gap-4">
       
@@ -104,13 +80,7 @@ const Inicio = () => {
         </div>
       </button>
 
-      <button 
-        onClick={probarMenuNativo}
-          className="bg-blue-600 text-white p-4 m-4 rounded-lg font-bold"
-      >
-  🧪 PROBAR MENÚ DE WHATSAPP
-</button>
-
+      
     </div>
   );
 };
