@@ -94,7 +94,14 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
     es_comprobante: esComprobante // INYECTAMOS EL FLAG AL HTML
   });
 
-  const browser = await puppeteer.launch({ headless: 'new' });
+ const browser = await puppeteer.launch({
+    headless: true, 
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage' // VITAL para que Render gratuito no se quede sin memoria RAM
+    ]
+  });
   const page = await browser.newPage();
   await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
 
