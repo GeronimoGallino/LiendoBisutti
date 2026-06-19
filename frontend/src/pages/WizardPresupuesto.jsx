@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'; // <-- IMPORTAMOS u
 import { serviciosService } from '../services/servicios.service';
 import { clientesService } from '../services/clientes.service';
 import { presupuestosService } from '../services/presupuestos.service';
-import { vehiculosService } from '../services/categorias-vehiculos.service'; 
+import { vehiculosService } from '../services/categorias-vehiculos.service';
 
 import Paso1Servicios from '../components/Paso1Servicios';
 import Paso2Resumen from '../components/Paso2Resumen';
