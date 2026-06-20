@@ -30,8 +30,7 @@ const Paso4Exito = ({ presupuestoGenerado, cliente, onVolver }) => {
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
           files: [pdfFile],
-          title: `Presupuesto #${presupuestoGenerado.id} - Liendo Bissutti`,
-          text: 'Te comparto el presupuesto de los servicios.',
+          title: `Presupuesto #${presupuestoGenerado.id} - Liendo Bissutti`
         });
       } else {
         // Fallback para PC: Forzamos descarga si no hay menú nativo
@@ -64,16 +63,28 @@ const Paso4Exito = ({ presupuestoGenerado, cliente, onVolver }) => {
       </p>
       
       <div className="p-4 flex flex-col gap-4 min-h-screen max-w-2xl mx-auto w-full">
-        <button onClick={onVolver} className="w-full py-4 bg-gray-800 text-white text-lg font-bold rounded-xl active:scale-95 shadow-md">
-          Volver al Inicio
-        </button>
-        
         <button 
           onClick={manejarCompartir} 
           disabled={cargandoPdf}
-          className={`w-full py-4 bg-transparent font-bold mt-2 underline transition-opacity ${cargandoPdf ? 'text-gray-400 cursor-not-allowed' : 'text-brand'}`}
+          className={`w-full py-4 border-2 font-bold rounded-xl active:scale-95 shadow-sm transition-all flex items-center justify-center gap-2 mt-2 ${
+            cargandoPdf 
+              ? 'border-gray-300 text-gray-400 cursor-not-allowed bg-gray-50' 
+              : 'border-brand text-brand hover:bg-brand/10'
+          }`}
         >
+          {/* Icono nativo de compartir */}
+          {!cargandoPdf && (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-5.368m0 5.368l5.662 3.397m-5.662-3.397l5.662-3.397m0 0a3 3 0 105.368-5.368 3 3 0 00-5.368 5.368zm0 10.736a3 3 0 105.368-5.368 3 3 0 00-5.368 5.368z"></path>
+            </svg>
+          )}
+          
           {cargandoPdf ? 'Generando PDF...' : 'Compartir PDF'}
+        </button>
+
+
+        <button onClick={onVolver} className="w-full py-4 bg-gray-800 text-white text-lg font-bold rounded-xl active:scale-95 shadow-md">
+          Volver al Inicio
         </button>
       </div>
     </div>

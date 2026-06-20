@@ -22,7 +22,7 @@ const Paso2Resumen = ({ totalesCalculados, incluyeIva, onAtras, onSiguiente }) =
                 {detalle.snapshot_precios.servicio_nombre}
                 {detalle.porcentaje_descuento > 0 && (
                   <span className="text-blue-600 text-xs ml-2 font-bold bg-blue-50 px-2 py-0.5 rounded">
-                    {detalle.porcentaje_descuento}% Off asignado
+                    {detalle.porcentaje_descuento}% Off
                   </span>
                 )}
               </p>

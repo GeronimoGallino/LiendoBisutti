@@ -45,6 +45,13 @@ const WizardPresupuesto = () => {
     cargarDatos();
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+  }, [pasoActual]);
+
   const agregarServicio = (tipoCalculo, servicioSeleccionado) => {
     let vehiculoAsignadoId = servicioActual.vehiculo_id;
 
@@ -123,7 +130,14 @@ const WizardPresupuesto = () => {
       // Pasamos inmediatamente al Paso 4.
       setPasoActual(4);
     } catch (error) {
-      alert("Hubo un error al procesar el presupuesto");
+      // 1. Imprimimos el error real en la consola oculta (F12) para nosotros
+      console.error("Error completo al procesar:", error);
+      
+      // 2. Intentamos capturar el mensaje exacto que mandó el Backend
+      const mensajeError = error.response?.data?.error || error.message || "Error desconocido en el servidor";
+      
+      // 3. Se lo mostramos en el alert
+      alert(`Error al guardar: ${mensajeError}`);
     } finally {
       setIsSubmitting(false);
     }

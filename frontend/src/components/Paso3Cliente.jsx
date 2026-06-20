@@ -40,7 +40,7 @@ const Paso3Cliente = ({ cliente, setCliente, clientesDisponibles, isSubmitting, 
           disabled={(!cliente.esNuevo && !cliente.id) || (cliente.esNuevo && !cliente.nombre_razon_social) || isSubmitting}
           className="w-full py-4 bg-green-500 text-white text-lg font-bold rounded-xl active:scale-95 shadow-md disabled:opacity-50 flex justify-center items-center gap-2"
         >
-          {isSubmitting ? 'Procesando...' : 'Guardar y Compartir PDF'}
+          {isSubmitting ? 'Procesando...' : 'Generar Documento'}
         </button>
         
         <div className="flex gap-2">
