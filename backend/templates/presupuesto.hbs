@@ -296,10 +296,8 @@
 
         <div class="footer-wrapper">
             
-            {{#if es_comprobante}}
-            <div class="totales-y-aclaraciones" style="justify-content: flex-end;">
-            {{else}}
             <div class="totales-y-aclaraciones">
+                {{#unless es_comprobante}}
                 <div class="info-adicional">
                     <strong class="titulo">Aclaraciones y Adicionales</strong>
                     <ul>
@@ -307,7 +305,7 @@
                         <li><strong>Adicional por escalera o soga</strong> (hasta 70Kg): $ X por piso.</li>
                     </ul>
                 </div>
-            {{/if}}
+                {{/unless}}
 
                 <table class="resumen-table">
                     <tr>
@@ -339,7 +337,7 @@
 
             <div class="nota-final">
                 {{#unless es_comprobante}}
-                    Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
+                Este presupuesto tiene una validez de {{validez_dias}} días. Los precios están sujetos a cambios sin previo aviso.<br>
                 {{/unless}}
                 <strong>Liendo Bissutti SAS</strong> agradece su confianza.
             </div>

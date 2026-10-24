@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 const Inicio = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Si tenés una función logout importada usala, sino quitala.
+    logout();
     navigate('/login');
   };
 
@@ -39,7 +40,7 @@ const Inicio = () => {
       </header>
 
       {/* --- BOTÓN PRINCIPAL: GENERAR PRESUPUESTO --- */}
-      <button 
+      <button
         onClick={() => navigate('/WizardPresupuesto')}
         className="relative w-full bg-blue-600 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform group"
       >
@@ -52,35 +53,34 @@ const Inicio = () => {
         </div>
       </button>
 
-      {/* --- NUEVO BOTÓN: COSTO DE SERVICIO --- */}
-      <button 
+      {/* --- BOTÓN SECUNDARIO: GENERAR COMPROBANTE --- */}
+      <button
         onClick={() => navigate('/WizardPresupuesto', { state: { esComprobante: true } })}
         className="relative w-full bg-emerald-600 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform group"
       >
         <div>
-           <h2 className="text-2xl font-bold text-white">Generar Costo de Servicio</h2>
-           <p className="text-emerald-200 text-sm">Registrar viaje ya realizado (Comprobante)</p>
+           <h2 className="text-2xl font-bold text-white">Generar Comprobante</h2>
+           <p className="text-emerald-200 text-sm">Registrar viaje ya realizado</p>
         </div>
         <div className="text-4xl group-hover:scale-110 transition-transform">
            🧾
         </div>
       </button>
 
-      {/* --- NUEVO BOTÓN: DASHBOARD DE PRECIOS --- */}
+      {/* --- ESPACIO PARA FUTUROS BOTONES --- */}
+      {/* 
       <button 
-        onClick={() => navigate('/precios')}
-        className="relative w-full bg-slate-800 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform group mt-2"
+        onClick={() => navigate('/historial')}
+        className="w-full bg-gray-800 p-6 rounded-2xl shadow-lg text-left flex justify-between items-center active:scale-95 transition-transform"
       >
         <div>
-           <h2 className="text-2xl font-bold text-white">Tarifas y Precios</h2>
-           <p className="text-slate-300 text-sm">Ajustar catálogo y aplicar aumentos</p>
+           <h2 className="text-2xl font-bold text-white">Historial</h2>
+           <p className="text-gray-400 text-sm">Ver presupuestos anteriores</p>
         </div>
-        <div className="text-4xl group-hover:scale-110 transition-transform">
-           📈
-        </div>
-      </button>
+        <div className="text-4xl">📂</div>
+      </button> 
+      */}
 
-      
     </div>
   );
 };

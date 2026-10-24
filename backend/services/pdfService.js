@@ -30,6 +30,7 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
   const template = handlebars.compile(templateHtml);
 
   const logoBase64 = getBase64Image('logo.png');
+  const esComprobante = datosPresupuesto.estado === 'Comprobante';
 
   let subtotal_bruto_acumulado = 0;
   let porcentaje_descuento_aplicado = 0;
@@ -54,20 +55,19 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
       es_por_hora: calculoPorHora,
       es_mudanza: esMudanza,
       precio_unitario: formatearMoneda(precioBase),
-      subtotal_item: formatearMoneda(precioBrutoFila) 
+      subtotal_item: formatearMoneda(precioBrutoFila) // Renglón transparente en bruto
     };
   });
 
+  // La diferencia entre la suma de las celdas y el subtotal guardado en la DB es el descuento real
   const descuento_total_num = subtotal_bruto_acumulado - Number(datosPresupuesto.subtotal_general);
-  
-  // VERIFICAMOS SI ES UN COMPROBANTE
-  const esComprobante = datosPresupuesto.estado === 'Comprobante';
 
   const htmlFinal = template({
     logo: logoBase64,
     id_presupuesto: datosPresupuesto.id.toString().padStart(5, '0'),
     fecha: DateTime.now().setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy'),
     validez_dias: datosPresupuesto.validez_dias,
+    es_comprobante: esComprobante,
     cliente: {
       nombre: datosPresupuesto.Cliente.nombre_razon_social || '---',
       cuit: datosPresupuesto.Cliente.cuit_dni || '---',
@@ -79,33 +79,22 @@ const generarPresupuestoPDF = async (datosPresupuesto) => {
       email: 'transporteliendobisutti@gmail.com',
       direccion: 'Calle Baltimore 1843'
     },
-    
+
     items: itemsMapeados,
     modo_compacto: itemsMapeados.length > 5,
-    tiene_descuento: descuento_total_num > 0.01, 
+    tiene_descuento: descuento_total_num > 0.01,
     descuento_porcentaje: porcentaje_descuento_aplicado,
-    
+
     subtotal_bruto: formatearMoneda(subtotal_bruto_acumulado),
     descuento_total: formatearMoneda(descuento_total_num),
-    subtotal_neto: formatearMoneda(datosPresupuesto.subtotal_general), 
+    subtotal_neto: formatearMoneda(datosPresupuesto.subtotal_general),
     iva: formatearMoneda(datosPresupuesto.monto_iva_general),
-    total: formatearMoneda(datosPresupuesto.total_final),
-    
-    es_comprobante: esComprobante // INYECTAMOS EL FLAG AL HTML
+    total: formatearMoneda(datosPresupuesto.total_final)
   });
 
- const browser = await puppeteer.launch({
-    headless: true, 
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage' // VITAL para que Render gratuito no se quede sin memoria RAM
-    ]
-  });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-
-
-await page.setContent(htmlFinal, { waitUntil: 'domcontentloaded' });
+  await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
 
   const pdfBuffer = await page.pdf({
     format: 'A4',

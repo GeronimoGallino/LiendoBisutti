@@ -52,8 +52,7 @@ const calcularPreview = async (req, res) => {
 
 const crearPresupuesto = async (req, res) => {
   try {
-    // EXTRAEMOS EL FLAG DEL BODY
-    const { cliente_id, items, incluye_iva, validez_dias, es_comprobante } = req.body;
+    const { cliente_id, items, incluye_iva, validez_dias, es_comprobante = false } = req.body;
 
     if (!cliente_id) {
       return res.status(400).json({ error: 'cliente_id es obligatorio' });
@@ -67,7 +66,6 @@ const crearPresupuesto = async (req, res) => {
       return res.status(400).json({ error: 'incluye_iva debe ser un booleano' });
     }
 
-    // LE PASAMOS EL FLAG AL SERVICIO COMO 5to PARÁMETRO
     const presupuesto = await generarNuevo(cliente_id, items, incluye_iva, validez_dias, es_comprobante);
     res.status(201).json(presupuesto);
   } catch (error) {

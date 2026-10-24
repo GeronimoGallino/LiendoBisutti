@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { serviciosService } from '../services/servicios.service';
 import { clientesService } from '../services/clientes.service';
 import { presupuestosService } from '../services/presupuestos.service';
-import { vehiculosService } from '../services/categorias-vehiculos.service';
+import { vehiculosService } from '../services/categorias-vehiculos.service'; 
 
 import Paso1Servicios from '../components/Paso1Servicios';
 import Paso2Resumen from '../components/Paso2Resumen';
@@ -14,7 +14,7 @@ const WizardPresupuesto = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const esComprobante = location.state?.esComprobante || false;
-  
+
   const [catalogos, setCatalogos] = useState({ servicios: [], clientes: [], vehiculos: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pasoActual, setPasoActual] = useState(1);
@@ -23,6 +23,7 @@ const WizardPresupuesto = () => {
   const [presupuestoGenerado, setPresupuestoGenerado] = useState(null);
   const [incluyeIva, setIncluyeIva] = useState(false);
   
+  // NUEVO: Agregamos costo_base_fijo_manual y precio_hora_manual
   const [servicioActual, setServicioActual] = useState({
     servicio_id: '', vehiculo_id: '', cantidad_km: '', cantidad_horas: '', costo_base_fijo_manual: '', precio_hora_manual: '', porcentaje_descuento: ''
   });
@@ -45,13 +46,6 @@ const WizardPresupuesto = () => {
     cargarDatos();
   }, []);
 
-  useEffect(() => {
-    window.scrollTo({ 
-      top: 0, 
-      behavior: 'smooth' 
-    });
-  }, [pasoActual]);
-
   const agregarServicio = (tipoCalculo, servicioSeleccionado) => {
     let vehiculoAsignadoId = servicioActual.vehiculo_id;
 
@@ -67,6 +61,7 @@ const WizardPresupuesto = () => {
       vehiculo_id: Number(vehiculoAsignadoId),
       cantidad_km: servicioActual.cantidad_km ? Number(servicioActual.cantidad_km) : 0,
       cantidad_horas: servicioActual.cantidad_horas ? Number(servicioActual.cantidad_horas) : 0,
+      // Pasamos los precios editados
       costo_base_fijo_manual: servicioActual.costo_base_fijo_manual !== '' ? Number(servicioActual.costo_base_fijo_manual) : null,
       precio_hora_manual: servicioActual.precio_hora_manual !== '' ? Number(servicioActual.precio_hora_manual) : null,
       porcentaje_descuento: servicioActual.porcentaje_descuento !== '' ? Number(servicioActual.porcentaje_descuento) : 0,
@@ -86,6 +81,7 @@ const WizardPresupuesto = () => {
   const calcularTotales = async () => {
     try {
       setIsSubmitting(true);
+      // NUEVO: Rescatamos los precios manuales para el backend
       const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento }) => ({
         servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento
       }));
@@ -112,32 +108,21 @@ const WizardPresupuesto = () => {
         clienteId = nuevoCliente.id;
       }
 
+      // NUEVO: Rescatamos los precios manuales para el backend
       const itemsLimpios = serviciosAgregados.map(({ servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento }) => ({
         servicio_id, vehiculo_id, cantidad_km, cantidad_horas, costo_base_fijo_manual, precio_hora_manual, porcentaje_descuento
       }));
 
       const presupuestoDb = await presupuestosService.crear({
-        cliente_id: clienteId, 
-        items: itemsLimpios, 
-        incluye_iva: incluyeIva, 
-        validez_dias: 30,
-        es_comprobante: esComprobante
+        cliente_id: clienteId, items: itemsLimpios, incluye_iva: incluyeIva, validez_dias: 30, es_comprobante: esComprobante
       });
       
       setPresupuestoGenerado(presupuestoDb);
+      if (accion === 'GENERAR_PDF') await presupuestosService.compartirODescargarPdf(presupuestoDb.id);
       
-      // Ya no generamos el PDF acá para no bloquear la UI.
-      // Pasamos inmediatamente al Paso 4.
       setPasoActual(4);
     } catch (error) {
-      // 1. Imprimimos el error real en la consola oculta (F12) para nosotros
-      console.error("Error completo al procesar:", error);
-      
-      // 2. Intentamos capturar el mensaje exacto que mandó el Backend
-      const mensajeError = error.response?.data?.error || error.message || "Error desconocido en el servidor";
-      
-      // 3. Se lo mostramos en el alert
-      alert(`Error al guardar: ${mensajeError}`);
+      alert("Hubo un error al procesar el presupuesto");
     } finally {
       setIsSubmitting(false);
     }
@@ -146,21 +131,10 @@ const WizardPresupuesto = () => {
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <button 
-          onClick={() => navigate('/')} 
-          className="bg-gray-200 p-2 rounded-lg text-gray-700 hover:bg-gray-300 active:scale-95 transition-all"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-
+        <button onClick={() => navigate('/inicio')} className="text-gray-400 font-bold px-2 py-1">X</button>
         <div className="flex gap-1">
           {[1, 2, 3, 4].map(step => (
-            <div 
-              key={step} 
-              className={`h-2 w-8 rounded-full ${pasoActual >= step ? 'bg-brand' : 'bg-gray-300'}`} 
-            />
+            <div key={step} className={`h-2 w-8 rounded-full ${pasoActual >= step ? 'bg-brand' : 'bg-gray-300'}`} />
           ))}
         </div>
       </div>
@@ -206,6 +180,7 @@ const WizardPresupuesto = () => {
           presupuestoGenerado={presupuestoGenerado}
           cliente={cliente}
           onVolver={() => navigate('/')}
+          onCompartir={() => presupuestosService.compartirODescargarPdf(presupuestoGenerado.id)}
         />
       )}
     </div>
